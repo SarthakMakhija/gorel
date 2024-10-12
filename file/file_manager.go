@@ -29,7 +29,7 @@ func NewBlockFileManager(dbDirectory string, blockSize uint) (*BlockFileManager,
 }
 
 func (fileManager *BlockFileManager) ReadInto(blockId BlockId, page *Page) error {
-	return fileManager.seekAndRun(blockId, func(file *os.File) error {
+	return fileManager.seekWithinFileAndRun(blockId, func(file *os.File) error {
 		if _, err := file.Read(page.buffer); err != nil {
 			return err
 		}
@@ -38,7 +38,7 @@ func (fileManager *BlockFileManager) ReadInto(blockId BlockId, page *Page) error
 }
 
 func (fileManager *BlockFileManager) Write(blockId BlockId, page *Page) error {
-	return fileManager.seekAndRun(blockId, func(file *os.File) error {
+	return fileManager.seekWithinFileAndRun(blockId, func(file *os.File) error {
 		if _, err := file.Write(page.buffer); err != nil {
 			return err
 		}
@@ -58,7 +58,7 @@ func (fileManager *BlockFileManager) BlockSize() uint {
 	return fileManager.blockSize
 }
 
-func (fileManager *BlockFileManager) seekAndRun(blockId BlockId, block func(*os.File) error) error {
+func (fileManager *BlockFileManager) seekWithinFileAndRun(blockId BlockId, block func(*os.File) error) error {
 	file, err := fileManager.getOrCreateFile(blockId.fileName)
 	if err != nil {
 		return err
