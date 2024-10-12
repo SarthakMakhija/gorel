@@ -12,14 +12,6 @@ func NewBlockId(fileName string, blockNumber uint) BlockId {
 	}
 }
 
-func (blockId BlockId) Offset(blockSize uint) int64 {
+func (blockId BlockId) offset(blockSize uint) int64 {
 	return int64(blockId.blockNumber * blockSize)
-}
-
-func (blockId BlockId) FileName() string {
-	return blockId.fileName
-}
-
-func (blockId BlockId) BlockNumber() uint {
-	return blockId.blockNumber
 }
