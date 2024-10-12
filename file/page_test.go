@@ -7,6 +7,20 @@ import (
 
 const blockSize = 4096
 
+func TestPageWithAPositiveIntValue(t *testing.T) {
+	page := NewPage(blockSize)
+	page.setInt(5, 1000)
+
+	assert.Equal(t, 1000, page.getInt(5))
+}
+
+func TestPageWithANegativeIntValue(t *testing.T) {
+	page := NewPage(blockSize)
+	page.setInt(5, -1000)
+
+	assert.Equal(t, -1000, page.getInt(5))
+}
+
 func TestPageWithAnUint32Value(t *testing.T) {
 	page := NewPage(blockSize)
 	page.setUint32(5, uint32(100))

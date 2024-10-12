@@ -2,6 +2,7 @@ package file
 
 import (
 	"encoding/binary"
+	"gorel/convert"
 	"unsafe"
 )
 
@@ -18,6 +19,14 @@ func NewPage(blockSize uint) *Page {
 	return &Page{
 		buffer: make([]byte, blockSize),
 	}
+}
+
+func (page *Page) setInt(offset uint, value int) {
+	page.setBytes(offset, convert.IntToBytes(value))
+}
+
+func (page *Page) getInt(offset uint) int {
+	return convert.BytesToInt(page.getBytes(offset))
 }
 
 func (page *Page) setUint32(offset uint, value uint32) {
