@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 )
 
+// BlockFileManager
+// TODO: append method
 type BlockFileManager struct {
 	dbDirectory string
 	blockSize   uint
