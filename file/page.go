@@ -26,8 +26,8 @@ type Page struct {
 }
 
 // NewPage
-// TODO: Check valid currentWriteOffset in all the set methods, currentWriteOffset < len(buffer)
-// TODO: Check valid currentWriteOffset in all the get method,  currentReadOffset < currentWriteOffset
+// TODO: Check valid currentWriteOffset in all the set methods, currentWriteOffset + incoming value size < len(buffer)
+// TODO: Check valid currentWriteOffset in all the get method,  currentReadOffset + value type to be read < currentWriteOffset
 // TODO: Check that the page has enough space to accommodate the incoming value
 // TODO: Add support for Date
 func NewPage(blockSize uint) *Page {
