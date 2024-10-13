@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	reservedBufferSize = int(unsafe.Sizeof(uint32(0)))
-	intSize            = int(unsafe.Sizeof(0))
+	reservedBufferSize = uint(unsafe.Sizeof(uint32(0)))
+	intSize            = uint(unsafe.Sizeof(0))
 )
 
 type Page struct {
@@ -29,7 +29,7 @@ func (page *Page) setInt(offset uint, value int) {
 }
 
 func (page *Page) getInt(offset uint) int {
-	return convert.BytesToInt(page.buffer[offset : offset+uint(intSize)])
+	return convert.BytesToInt(page.buffer[offset : offset+intSize])
 }
 
 func (page *Page) setUint32(offset uint, value uint32) {
@@ -43,13 +43,13 @@ func (page *Page) getUint32(offset uint) uint32 {
 func (page *Page) setBytes(offset uint, buffer []byte) {
 	//TODO: Buffer size should be less than 2^32-1 (close to 4G)
 	binary.LittleEndian.PutUint32(page.buffer[offset:], uint32(len(buffer)))
-	copy(page.buffer[offset+uint(reservedBufferSize):], buffer)
+	copy(page.buffer[offset+reservedBufferSize:], buffer)
 }
 
 func (page *Page) getBytes(offset uint) []byte {
 	bufferLength := binary.LittleEndian.Uint32(page.buffer[offset:])
-	endOffset := offset + uint(reservedBufferSize) + uint(bufferLength)
-	return page.buffer[offset+uint(reservedBufferSize) : endOffset]
+	endOffset := offset + reservedBufferSize + uint(bufferLength)
+	return page.buffer[offset+reservedBufferSize : endOffset]
 }
 
 func (page *Page) setString(offset uint, str string) {
