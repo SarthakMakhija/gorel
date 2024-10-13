@@ -18,6 +18,7 @@ type Page struct {
 // NewPage
 // TODO: Check valid offset in all the methods, offset < len(buffer)
 // TODO: Check that the page has enough space to accommodate the incoming value
+// TODO: Maybe provide a method to set and get any numeric type
 func NewPage(blockSize uint) *Page {
 	return &Page{
 		buffer: make([]byte, blockSize),
