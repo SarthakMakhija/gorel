@@ -144,7 +144,7 @@ func TestPageWithAFloat32Value(t *testing.T) {
 	}
 }
 
-func TestPageWithAFloat63Value(t *testing.T) {
+func TestPageWithAFloat64Value(t *testing.T) {
 	table := []struct {
 		offset uint
 		value  float64
