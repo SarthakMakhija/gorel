@@ -19,6 +19,7 @@ type Page struct {
 // NewPage
 // TODO: Check valid offset in all the methods, offset < len(buffer)
 // TODO: Check that the page has enough space to accommodate the incoming value
+// TODO: Add support for Date
 func NewPage(blockSize uint) *Page {
 	return &Page{
 		buffer: make([]byte, blockSize),
@@ -121,6 +122,15 @@ func (page *Page) getFloat64(offset uint) float64 {
 	return math.Float64frombits(page.getUint64(offset))
 }
 
+func (page *Page) setString(offset uint, str string) {
+	//TODO: str size should be less than 2^32-1 (close to 4G)
+	page.setBytes(offset, []byte(str))
+}
+
+func (page *Page) getString(offset uint) string {
+	return string(page.getBytes(offset))
+}
+
 func (page *Page) setBytes(offset uint, buffer []byte) {
 	//TODO: Buffer size should be less than 2^32-1 (close to 4G)
 	binary.LittleEndian.PutUint32(page.buffer[offset:], uint32(len(buffer)))
@@ -133,11 +143,14 @@ func (page *Page) getBytes(offset uint) []byte {
 	return page.buffer[offset+reservedBufferSize : endOffset]
 }
 
-func (page *Page) setString(offset uint, str string) {
-	//TODO: str size should be less than 2^32-1 (close to 4G)
-	page.setBytes(offset, []byte(str))
+func (page *Page) setBool(offset uint, value bool) {
+	if value {
+		page.buffer[offset] = 1
+	} else {
+		page.buffer[offset] = 0
+	}
 }
 
-func (page *Page) getString(offset uint) string {
-	return string(page.getBytes(offset))
+func (page *Page) getBool(offset uint) bool {
+	return page.buffer[offset] != 0
 }

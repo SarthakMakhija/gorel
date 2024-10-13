@@ -161,6 +161,13 @@ func TestPageWithAFloat64Value(t *testing.T) {
 	}
 }
 
+func TestPageWithAStringValue(t *testing.T) {
+	page := NewPage(blockSize)
+	page.setBytes(5, []byte("PebbleDB is also an LSM-based storage engine"))
+
+	assert.Equal(t, "PebbleDB is also an LSM-based storage engine", page.getString(5))
+}
+
 func TestPageWithAByteSliceValue(t *testing.T) {
 	page := NewPage(blockSize)
 	page.setBytes(5, []byte("RockDB is an LSM-based storage engine"))
@@ -168,9 +175,19 @@ func TestPageWithAByteSliceValue(t *testing.T) {
 	assert.Equal(t, []byte("RockDB is an LSM-based storage engine"), page.getBytes(5))
 }
 
-func TestPageWithAStringValue(t *testing.T) {
-	page := NewPage(blockSize)
-	page.setBytes(5, []byte("PebbleDB is also an LSM-based storage engine"))
+func TestPageWithABoolValue(t *testing.T) {
+	table := []struct {
+		offset uint
+		value  bool
+	}{
+		{offset: 5, value: true},
+		{offset: 5, value: false},
+	}
 
-	assert.Equal(t, "PebbleDB is also an LSM-based storage engine", page.getString(5))
+	for _, entry := range table {
+		page := NewPage(blockSize)
+		page.setBool(entry.offset, entry.value)
+
+		assert.Equal(t, entry.value, page.getBool(entry.offset))
+	}
 }
