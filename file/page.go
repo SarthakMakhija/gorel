@@ -9,148 +9,194 @@ import (
 
 var (
 	reservedBufferSize = uint(unsafe.Sizeof(uint32(0)))
+	uint8Size          = uint(unsafe.Sizeof(uint8(0)))
+	uint16Size         = uint(unsafe.Sizeof(uint16(0)))
+	uint32Size         = uint(unsafe.Sizeof(uint32(0)))
+	uint64Size         = uint(unsafe.Sizeof(uint64(0)))
+	uintSize           = uint(unsafe.Sizeof(uint(0)))
 	intSize            = uint(unsafe.Sizeof(0))
+	float32Size        = uint(unsafe.Sizeof(float32(0)))
+	float64Size        = uint(unsafe.Sizeof(float64(0)))
 )
 
 type Page struct {
-	buffer []byte
+	buffer             []byte
+	currentWriteOffset uint
+	currentReadOffset  uint
 }
 
 // NewPage
-// TODO: Check valid offset in all the methods, offset < len(buffer)
+// TODO: Check valid currentWriteOffset in all the set methods, currentWriteOffset < len(buffer)
+// TODO: Check valid currentWriteOffset in all the get method,  currentReadOffset < currentWriteOffset
 // TODO: Check that the page has enough space to accommodate the incoming value
 // TODO: Add support for Date
 func NewPage(blockSize uint) *Page {
 	return &Page{
-		buffer: make([]byte, blockSize),
+		buffer:             make([]byte, blockSize),
+		currentWriteOffset: 0,
+		currentReadOffset:  0,
 	}
 }
 
-func (page *Page) setInt8(offset uint, value int8) {
-	page.setUint8(offset, uint8(value))
+func (page *Page) setInt8(value int8) {
+	page.setUint8(uint8(value))
 }
 
-func (page *Page) getInt8(offset uint) int8 {
-	return int8(page.getUint8(offset))
+func (page *Page) getInt8() int8 {
+	return int8(page.getUint8())
 }
 
-func (page *Page) setInt16(offset uint, value int16) {
-	page.setUint16(offset, uint16(value))
+func (page *Page) setInt16(value int16) {
+	page.setUint16(uint16(value))
 }
 
-func (page *Page) getInt16(offset uint) int16 {
-	return int16(page.getUint16(offset))
+func (page *Page) getInt16() int16 {
+	return int16(page.getUint16())
 }
 
-func (page *Page) setInt32(offset uint, value int32) {
-	page.setUint32(offset, uint32(value))
+func (page *Page) setInt32(value int32) {
+	page.setUint32(uint32(value))
 }
 
-func (page *Page) getInt32(offset uint) int32 {
-	return int32(page.getUint32(offset))
+func (page *Page) getInt32() int32 {
+	return int32(page.getUint32())
 }
 
-func (page *Page) setInt64(offset uint, value int64) {
-	page.setUint64(offset, uint64(value))
+func (page *Page) setInt64(value int64) {
+	page.setUint64(uint64(value))
 }
 
-func (page *Page) getInt64(offset uint) int64 {
-	return int64(page.getUint64(offset))
+func (page *Page) getInt64() int64 {
+	return int64(page.getUint64())
 }
 
-func (page *Page) setUint8(offset uint, value uint8) {
-	page.buffer[offset] = value
+func (page *Page) setUint8(value uint8) {
+	page.buffer[page.currentWriteOffset] = value
+	page.moveCurrentWriteOffsetBy(uint8Size)
 }
 
-func (page *Page) getUint8(offset uint) uint8 {
-	return page.buffer[offset]
+func (page *Page) getUint8() uint8 {
+	value := page.buffer[page.currentReadOffset]
+	page.moveCurrentReadOffsetBy(uint8Size)
+	return value
 }
 
-func (page *Page) setUint16(offset uint, value uint16) {
-	binary.LittleEndian.PutUint16(page.buffer[offset:], value)
+func (page *Page) setUint16(value uint16) {
+	binary.LittleEndian.PutUint16(page.buffer[page.currentWriteOffset:], value)
+	page.moveCurrentWriteOffsetBy(uint16Size)
 }
 
-func (page *Page) getUint16(offset uint) uint16 {
-	return binary.LittleEndian.Uint16(page.buffer[offset:])
+func (page *Page) getUint16() uint16 {
+	value := binary.LittleEndian.Uint16(page.buffer[page.currentReadOffset:])
+	page.moveCurrentReadOffsetBy(uint16Size)
+	return value
 }
 
-func (page *Page) setUint32(offset uint, value uint32) {
-	binary.LittleEndian.PutUint32(page.buffer[offset:], value)
+func (page *Page) setUint32(value uint32) {
+	binary.LittleEndian.PutUint32(page.buffer[page.currentWriteOffset:], value)
+	page.moveCurrentWriteOffsetBy(uint32Size)
 }
 
-func (page *Page) getUint32(offset uint) uint32 {
-	return binary.LittleEndian.Uint32(page.buffer[offset:])
+func (page *Page) getUint32() uint32 {
+	value := binary.LittleEndian.Uint32(page.buffer[page.currentReadOffset:])
+	page.moveCurrentReadOffsetBy(uint32Size)
+	return value
 }
 
-func (page *Page) setUint64(offset uint, value uint64) {
-	binary.LittleEndian.PutUint64(page.buffer[offset:], value)
+func (page *Page) setUint64(value uint64) {
+	binary.LittleEndian.PutUint64(page.buffer[page.currentWriteOffset:], value)
+	page.moveCurrentWriteOffsetBy(uint64Size)
 }
 
-func (page *Page) getUint64(offset uint) uint64 {
-	return binary.LittleEndian.Uint64(page.buffer[offset:])
+func (page *Page) getUint64() uint64 {
+	value := binary.LittleEndian.Uint64(page.buffer[page.currentReadOffset:])
+	page.moveCurrentReadOffsetBy(uint64Size)
+	return value
 }
 
-func (page *Page) setInt(offset uint, value int) {
-	copy(page.buffer[offset:], convert.IntToBytes[int](value))
+func (page *Page) setInt(value int) {
+	copy(page.buffer[page.currentWriteOffset:], convert.IntToBytes[int](value))
+	page.moveCurrentWriteOffsetBy(intSize)
 }
 
-func (page *Page) getInt(offset uint) int {
-	return convert.BytesToInt[int](page.buffer[offset : offset+intSize])
+func (page *Page) getInt() int {
+	value := convert.BytesToInt[int](page.buffer[page.currentReadOffset : page.currentReadOffset+intSize])
+	page.moveCurrentReadOffsetBy(intSize)
+	return value
 }
 
-func (page *Page) setUint(offset uint, value uint) {
-	copy(page.buffer[offset:], convert.IntToBytes[uint](value))
+func (page *Page) setUint(value uint) {
+	copy(page.buffer[page.currentWriteOffset:], convert.IntToBytes[uint](value))
+	page.moveCurrentWriteOffsetBy(uintSize)
 }
 
-func (page *Page) getUint(offset uint) uint {
-	return convert.BytesToInt[uint](page.buffer[offset : offset+intSize])
+func (page *Page) getUint() uint {
+	value := convert.BytesToInt[uint](page.buffer[page.currentReadOffset : page.currentReadOffset+intSize])
+	page.moveCurrentReadOffsetBy(uintSize)
+	return value
 }
 
-func (page *Page) setFloat32(offset uint, value float32) {
-	binary.LittleEndian.PutUint32(page.buffer[offset:], math.Float32bits(value))
+func (page *Page) setFloat32(value float32) {
+	binary.LittleEndian.PutUint32(page.buffer[page.currentWriteOffset:], math.Float32bits(value))
+	page.moveCurrentWriteOffsetBy(float32Size)
 }
 
-func (page *Page) getFloat32(offset uint) float32 {
-	return math.Float32frombits(page.getUint32(offset))
+func (page *Page) getFloat32() float32 {
+	return math.Float32frombits(page.getUint32())
 }
 
-func (page *Page) setFloat64(offset uint, value float64) {
-	binary.LittleEndian.PutUint64(page.buffer[offset:], math.Float64bits(value))
+func (page *Page) setFloat64(value float64) {
+	binary.LittleEndian.PutUint64(page.buffer[page.currentWriteOffset:], math.Float64bits(value))
+	page.moveCurrentWriteOffsetBy(float64Size)
 }
 
-func (page *Page) getFloat64(offset uint) float64 {
-	return math.Float64frombits(page.getUint64(offset))
+func (page *Page) getFloat64() float64 {
+	return math.Float64frombits(page.getUint64())
 }
 
-func (page *Page) setString(offset uint, str string) {
+func (page *Page) setString(str string) {
 	//TODO: str size should be less than 2^32-1 (close to 4G)
-	page.setBytes(offset, []byte(str))
+	page.setBytes([]byte(str))
 }
 
-func (page *Page) getString(offset uint) string {
-	return string(page.getBytes(offset))
+func (page *Page) getString() string {
+	return string(page.getBytes())
 }
 
-func (page *Page) setBytes(offset uint, buffer []byte) {
+func (page *Page) setBytes(buffer []byte) {
 	//TODO: Buffer size should be less than 2^32-1 (close to 4G)
-	binary.LittleEndian.PutUint32(page.buffer[offset:], uint32(len(buffer)))
-	copy(page.buffer[offset+reservedBufferSize:], buffer)
+	binary.LittleEndian.PutUint32(page.buffer[page.currentWriteOffset:], uint32(len(buffer)))
+	copy(page.buffer[page.currentWriteOffset+reservedBufferSize:], buffer)
+	page.moveCurrentWriteOffsetBy(uint(len(buffer)) + reservedBufferSize)
 }
 
-func (page *Page) getBytes(offset uint) []byte {
-	bufferLength := binary.LittleEndian.Uint32(page.buffer[offset:])
-	endOffset := offset + reservedBufferSize + uint(bufferLength)
-	return page.buffer[offset+reservedBufferSize : endOffset]
+func (page *Page) getBytes() []byte {
+	bufferLength := binary.LittleEndian.Uint32(page.buffer[page.currentReadOffset:])
+	endOffset := page.currentReadOffset + reservedBufferSize + uint(bufferLength)
+	value := page.buffer[page.currentReadOffset+reservedBufferSize : endOffset]
+	page.moveCurrentReadOffsetBy(uint(len(value)) + reservedBufferSize)
+	return value
 }
 
-func (page *Page) setBool(offset uint, value bool) {
+func (page *Page) setBool(value bool) {
 	if value {
-		page.buffer[offset] = 1
+		page.buffer[page.currentWriteOffset] = 1
 	} else {
-		page.buffer[offset] = 0
+		page.buffer[page.currentWriteOffset] = 0
 	}
+	page.moveCurrentWriteOffsetBy(1)
 }
 
-func (page *Page) getBool(offset uint) bool {
-	return page.buffer[offset] != 0
+func (page *Page) getBool() bool {
+	value := page.buffer[page.currentReadOffset] != 0
+	page.moveCurrentReadOffsetBy(1)
+	return value
+}
+
+func (page *Page) moveCurrentWriteOffsetBy(offset uint) {
+	page.currentWriteOffset += offset
+}
+
+func (page *Page) moveCurrentReadOffsetBy(offset uint) {
+	page.currentReadOffset += offset
 }

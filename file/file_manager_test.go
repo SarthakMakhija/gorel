@@ -16,7 +16,7 @@ func TestWriteAPageUsingBlockFileManager(t *testing.T) {
 	}()
 
 	page := NewPage(blockSize)
-	page.setBytes(5, []byte("RockDB is an LSM-based storage engine"))
+	page.setBytes([]byte("RockDB is an LSM-based storage engine"))
 
 	fileName := t.Name()
 	blockId := NewBlockId(fileName, 3)
@@ -35,8 +35,8 @@ func TestWriteAPageAtBlockZeroAndThenReadItUsingBlockFileManager(t *testing.T) {
 	}()
 
 	page := NewPage(blockSize)
-	page.setUint32(10, uint32(500))
-	page.setString(20, "RockDB is an LSM-based storage engine")
+	page.setUint32(uint32(500))
+	page.setString("RockDB is an LSM-based storage engine")
 
 	fileName := t.Name()
 	blockId := NewBlockId(fileName, 0)
@@ -49,8 +49,8 @@ func TestWriteAPageAtBlockZeroAndThenReadItUsingBlockFileManager(t *testing.T) {
 	err = fileManager.ReadInto(blockId, readPage)
 	assert.Nil(t, err)
 
-	assert.Equal(t, uint32(500), readPage.getUint32(10))
-	assert.Equal(t, "RockDB is an LSM-based storage engine", readPage.getString(20))
+	assert.Equal(t, uint32(500), readPage.getUint32())
+	assert.Equal(t, "RockDB is an LSM-based storage engine", readPage.getString())
 }
 
 func TestWriteAPageAtBlockHigherThanZeroAndThenReadItUsingBlockFileManager(t *testing.T) {
@@ -63,8 +63,8 @@ func TestWriteAPageAtBlockHigherThanZeroAndThenReadItUsingBlockFileManager(t *te
 	}()
 
 	page := NewPage(blockSize)
-	page.setUint32(10, uint32(500))
-	page.setString(20, "PebbleDB is an LSM-based storage engine")
+	page.setUint32(uint32(500))
+	page.setString("PebbleDB is an LSM-based storage engine")
 
 	fileName := t.Name()
 	blockId := NewBlockId(fileName, 10)
@@ -77,6 +77,6 @@ func TestWriteAPageAtBlockHigherThanZeroAndThenReadItUsingBlockFileManager(t *te
 	err = fileManager.ReadInto(blockId, readPage)
 	assert.Nil(t, err)
 
-	assert.Equal(t, uint32(500), readPage.getUint32(10))
-	assert.Equal(t, "PebbleDB is an LSM-based storage engine", readPage.getString(20))
+	assert.Equal(t, uint32(500), readPage.getUint32())
+	assert.Equal(t, "PebbleDB is an LSM-based storage engine", readPage.getString())
 }
