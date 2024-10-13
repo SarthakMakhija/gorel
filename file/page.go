@@ -131,7 +131,7 @@ func (page *Page) setUint(value uint) {
 }
 
 func (page *Page) getUint() uint {
-	value := convert.BytesToInt[uint](page.buffer[page.currentReadOffset : page.currentReadOffset+intSize])
+	value := convert.BytesToInt[uint](page.buffer[page.currentReadOffset : page.currentReadOffset+uintSize])
 	page.moveCurrentReadOffsetBy(uintSize)
 	return value
 }
