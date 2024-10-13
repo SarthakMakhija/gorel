@@ -6,7 +6,10 @@ import (
 	"unsafe"
 )
 
-var reservedBufferSize = int(unsafe.Sizeof(uint32(0)))
+var (
+	reservedBufferSize = int(unsafe.Sizeof(uint32(0)))
+	intSize            = int(unsafe.Sizeof(0))
+)
 
 type Page struct {
 	buffer []byte
@@ -22,11 +25,11 @@ func NewPage(blockSize uint) *Page {
 }
 
 func (page *Page) setInt(offset uint, value int) {
-	page.setBytes(offset, convert.IntToBytes(value))
+	copy(page.buffer[offset:], convert.IntToBytes(value))
 }
 
 func (page *Page) getInt(offset uint) int {
-	return convert.BytesToInt(page.getBytes(offset))
+	return convert.BytesToInt(page.buffer[offset : offset+uint(intSize)])
 }
 
 func (page *Page) setUint32(offset uint, value uint32) {
