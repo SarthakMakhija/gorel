@@ -30,8 +30,7 @@ func (builder *PageBuilder) Add(buffer []byte) {
 }
 
 func (builder *PageBuilder) Build() Page {
-	resultingBuffer := make([]byte, builder.blockSize)
-	copy(resultingBuffer, builder.buffer[:builder.currentWriteOffset])
+	resultingBuffer := builder.buffer
 
 	encodedStartingOffsets := builder.startingOffsets.Encode()
 	offsetToWriteTheEncodedStartingOffsets := builder.currentWriteOffset
