@@ -43,6 +43,7 @@ func (builder *PageBuilder) Build() Page {
 
 	binary.LittleEndian.PutUint16(resultingBuffer[len(resultingBuffer)-reservedSizeForNumberOfOffsets:], uint16(builder.startingOffsets.Length()))
 	binary.LittleEndian.PutUint16(resultingBuffer[len(resultingBuffer)-reservedSizeForNumberOfOffsets-reservedSizeForNumberOfOffsets:], uint16(offsetToWriteTheEncodedStartingOffsets))
+
 	return NewPage(resultingBuffer, builder.startingOffsets)
 }
 

@@ -31,10 +31,7 @@ func DecodePageFrom(buffer []byte) Page {
 	startingOffsets := file.DecodeStartingOffsetsFrom(
 		buffer[offsetAtWhichEncodedStartingOffsetsAreWritten : int(offsetAtWhichEncodedStartingOffsetsAreWritten)+reservedSizeForNumberOfOffsets*int(numberOfOffsets)],
 	)
-	return Page{
-		buffer:          buffer,
-		startingOffsets: startingOffsets,
-	}
+	return NewPage(buffer, startingOffsets)
 }
 
 func (page Page) BackwardIterator() *BackwardRecordIterator {
