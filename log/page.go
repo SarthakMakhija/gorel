@@ -2,6 +2,7 @@ package log
 
 import (
 	"encoding/binary"
+	"gorel"
 	"gorel/file"
 	"unsafe"
 )
@@ -42,9 +43,7 @@ func (page Page) BackwardIterator() *BackwardRecordIterator {
 }
 
 func (page Page) getBytesAt(offset uint16) []byte {
-	byteSliceLength := binary.LittleEndian.Uint16(page.buffer[offset:])
-	endOffset := offset + uint16(reservedSizeForByteSlice) + byteSliceLength
-	return page.buffer[offset+uint16(reservedSizeForByteSlice) : endOffset]
+	return gorel.DecodeByteSlice(page.buffer, offset)
 }
 
 func (iterator *BackwardRecordIterator) IsValid() bool {

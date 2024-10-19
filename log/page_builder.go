@@ -2,11 +2,9 @@ package log
 
 import (
 	"encoding/binary"
+	"gorel"
 	"gorel/file"
-	"unsafe"
 )
-
-var reservedSizeForByteSlice = uint(unsafe.Sizeof(uint16(0)))
 
 type PageBuilder struct {
 	buffer             []byte
@@ -26,11 +24,9 @@ func NewPageBuilder(blockSize uint) *PageBuilder {
 
 func (builder *PageBuilder) Add(buffer []byte) {
 	//TODO: check if the page has the capacity to fit the incoming record.
-	binary.LittleEndian.PutUint16(builder.buffer[builder.currentWriteOffset:], uint16(len(buffer)))
-	copy(builder.buffer[builder.currentWriteOffset+reservedSizeForByteSlice:], buffer)
-
+	numberOfBytesForEncoding := gorel.EncodeByteSlice(buffer, builder.buffer, builder.currentWriteOffset)
 	builder.startingOffsets.Append(uint16(builder.currentWriteOffset))
-	builder.moveCurrentWriteOffsetBy(uint(len(buffer)) + reservedSizeForByteSlice)
+	builder.moveCurrentWriteOffsetBy(numberOfBytesForEncoding)
 }
 
 func (builder *PageBuilder) Build() Page {
