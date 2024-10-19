@@ -8,6 +8,15 @@ import (
 
 const blockSize = 4096
 
+func TestCreateALogPageWithNoRecords(t *testing.T) {
+	pageBuilder := NewPageBuilder(blockSize)
+
+	page := pageBuilder.Build()
+	iterator := page.BackwardIterator()
+
+	assert.False(t, iterator.IsValid())
+}
+
 func TestCreateALogPageWithASingleRecord(t *testing.T) {
 	pageBuilder := NewPageBuilder(blockSize)
 	pageBuilder.Add([]byte("RocksDB is an LSM-based key/value storage engine"))
