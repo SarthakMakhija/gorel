@@ -13,7 +13,7 @@ func TestAttemptToAddARecordInAPageWithInsufficientSize(t *testing.T) {
 	assert.False(t, pageBuilder.Append([]byte("RocksDB is an LSM-based key/value storage engine")))
 }
 
-func TestAttemptToAddACoupleOfRecordsInAPageWithInsufficientSize(t *testing.T) {
+func TestAttemptToAddACoupleOfRecordsInAPageWithSizeSufficientForOnlyOneRecord(t *testing.T) {
 	pageBuilder := NewPageBuilder(60)
 	assert.True(t, pageBuilder.Append([]byte("RocksDB is an LSM-based key/value storage engine")))
 	assert.False(t, pageBuilder.Append([]byte("RocksDB is an LSM-based key/value storage engine")))
