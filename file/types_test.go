@@ -7,7 +7,7 @@ import (
 
 func TestEncodeAndDecodeTypesWithASingleTypeDescription(t *testing.T) {
 	types := NewTypes()
-	types.addTypeDescriptionUint8()
+	types.addTypeDescription(typeUint8)
 
 	encoded := types.encode()
 	decodedTypes := DecodeTypesFrom(encoded)
@@ -18,8 +18,8 @@ func TestEncodeAndDecodeTypesWithASingleTypeDescription(t *testing.T) {
 
 func TestEncodeAndDecodeTypesWithACoupleOfTypeDescriptions(t *testing.T) {
 	types := NewTypes()
-	types.addTypeDescriptionUint16()
-	types.addTypeDescriptionUint8()
+	types.addTypeDescription(typeUint16)
+	types.addTypeDescription(typeUint8)
 
 	encoded := types.encode()
 	decodedTypes := DecodeTypesFrom(encoded)
@@ -31,10 +31,10 @@ func TestEncodeAndDecodeTypesWithACoupleOfTypeDescriptions(t *testing.T) {
 
 func TestEncodeAndDecodeTypesWithFewTypeDescriptions(t *testing.T) {
 	types := NewTypes()
-	types.addTypeDescriptionUint16()
-	types.addTypeDescriptionUint8()
-	types.addTypeDescriptionUint64()
-	types.addTypeDescriptionUint32()
+	types.addTypeDescription(typeUint16)
+	types.addTypeDescription(typeUint8)
+	types.addTypeDescription(typeUint64)
+	types.addTypeDescription(typeUint32)
 
 	encoded := types.encode()
 	decodedTypes := DecodeTypesFrom(encoded)
@@ -48,7 +48,7 @@ func TestEncodeAndDecodeTypesWithFewTypeDescriptions(t *testing.T) {
 
 func TestEncodeAndDecodeTypesWithAStringTypeDescription(t *testing.T) {
 	types := NewTypes()
-	types.addTypeDescriptionString()
+	types.addTypeDescription(typeString)
 
 	encoded := types.encode()
 	decodedTypes := DecodeTypesFrom(encoded)
@@ -59,7 +59,7 @@ func TestEncodeAndDecodeTypesWithAStringTypeDescription(t *testing.T) {
 
 func TestEncodeAndDecodeTypesWithAByteSliceTypeDescription(t *testing.T) {
 	types := NewTypes()
-	types.addTypeDescriptionByteSlice()
+	types.addTypeDescription(typeByteSlice)
 
 	encoded := types.encode()
 	decodedTypes := DecodeTypesFrom(encoded)

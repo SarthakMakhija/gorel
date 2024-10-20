@@ -31,28 +31,8 @@ func DecodeTypesFrom(buffer []byte) *Types {
 	return types
 }
 
-func (types *Types) addTypeDescriptionUint8() {
-	types.description = append(types.description, typeUint8)
-}
-
-func (types *Types) addTypeDescriptionUint16() {
-	types.description = append(types.description, typeUint16)
-}
-
-func (types *Types) addTypeDescriptionUint32() {
-	types.description = append(types.description, typeUint32)
-}
-
-func (types *Types) addTypeDescriptionUint64() {
-	types.description = append(types.description, typeUint64)
-}
-
-func (types *Types) addTypeDescriptionString() {
-	types.description = append(types.description, typeString)
-}
-
-func (types *Types) addTypeDescriptionByteSlice() {
-	types.description = append(types.description, typeByteSlice)
+func (types *Types) addTypeDescription(description uint8) {
+	types.description = append(types.description, description)
 }
 
 func (types *Types) encode() []byte {
