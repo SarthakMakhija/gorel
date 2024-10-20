@@ -22,11 +22,14 @@ func NewPageBuilder(blockSize uint) *PageBuilder {
 	}
 }
 
-func (builder *PageBuilder) Add(buffer []byte) {
-	//TODO: check if the page has the capacity to fit the incoming record.
-	numberOfBytesForEncoding := gorel.EncodeByteSlice(buffer, builder.buffer, builder.currentWriteOffset)
-	builder.startingOffsets.Append(uint16(builder.currentWriteOffset))
-	builder.moveCurrentWriteOffsetBy(numberOfBytesForEncoding)
+func (builder *PageBuilder) Append(buffer []byte) bool {
+	if builder.hasCapacityFor(buffer) {
+		numberOfBytesForEncoding := gorel.EncodeByteSlice(buffer, builder.buffer, builder.currentWriteOffset)
+		builder.startingOffsets.Append(uint16(builder.currentWriteOffset))
+		builder.moveCurrentWriteOffsetBy(numberOfBytesForEncoding)
+		return true
+	}
+	return false
 }
 
 func (builder *PageBuilder) Build() Page {
@@ -44,4 +47,15 @@ func (builder *PageBuilder) Build() Page {
 
 func (builder *PageBuilder) moveCurrentWriteOffsetBy(offset uint) {
 	builder.currentWriteOffset += offset
+}
+
+func (builder *PageBuilder) hasCapacityFor(buffer []byte) bool {
+	bytesAvailable :=
+		len(builder.buffer) -
+			int(builder.currentWriteOffset) -
+			builder.startingOffsets.SizeUsedInBytes() -
+			2*reservedSizeForNumberOfOffsets
+
+	bytesNeeded := gorel.BytesNeededForEncodingAByteSlice(buffer) + builder.startingOffsets.SizeInBytesForAnOffset()
+	return bytesAvailable >= bytesNeeded
 }

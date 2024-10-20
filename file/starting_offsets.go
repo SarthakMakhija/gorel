@@ -45,3 +45,11 @@ func (startingOffsets *StartingOffsets) Length() int {
 func (startingOffsets *StartingOffsets) OffsetAtIndex(index int) uint16 {
 	return startingOffsets.offsets[index]
 }
+
+func (startingOffsets *StartingOffsets) SizeInBytesForAnOffset() int {
+	return reservedSizeForAnOffset
+}
+
+func (startingOffsets *StartingOffsets) SizeUsedInBytes() int {
+	return reservedSizeForAnOffset * len(startingOffsets.offsets)
+}

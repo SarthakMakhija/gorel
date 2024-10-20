@@ -7,6 +7,10 @@ import (
 
 var reservedSizeForByteSlice = uint(unsafe.Sizeof(uint16(0)))
 
+func BytesNeededForEncodingAByteSlice(buffer []byte) int {
+	return int(reservedSizeForByteSlice) + len(buffer)
+}
+
 func EncodeByteSlice(source []byte, destination []byte, destinationStartingOffset uint) uint {
 	binary.LittleEndian.PutUint16(destination[destinationStartingOffset:], uint16(len(source)))
 	copy(destination[destinationStartingOffset+reservedSizeForByteSlice:], source)

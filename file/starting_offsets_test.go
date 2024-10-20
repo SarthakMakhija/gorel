@@ -42,3 +42,12 @@ func TestEncodeAndDecodeAFewStartingOffsets(t *testing.T) {
 	assert.Equal(t, uint16(400), decodedStartingOffsets.offsets[1])
 	assert.Equal(t, uint16(520), decodedStartingOffsets.offsets[2])
 }
+
+func TestSizeUsedInBytes(t *testing.T) {
+	startingOffsets := NewStartingOffsets()
+	startingOffsets.Append(20)
+	startingOffsets.Append(400)
+	startingOffsets.Append(800)
+
+	assert.Equal(t, 6, startingOffsets.SizeUsedInBytes())
+}
