@@ -22,7 +22,7 @@ func NewPageBuilder(blockSize uint) *PageBuilder {
 	}
 }
 
-func (builder *PageBuilder) Append(buffer []byte) bool {
+func (builder *PageBuilder) Add(buffer []byte) bool {
 	if builder.hasCapacityFor(buffer) {
 		numberOfBytesForEncoding := gorel.EncodeByteSlice(buffer, builder.buffer, builder.currentWriteOffset)
 		builder.startingOffsets.Append(uint16(builder.currentWriteOffset))

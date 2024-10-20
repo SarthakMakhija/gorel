@@ -10,19 +10,19 @@ const blockSize = 4096
 
 func TestAttemptToAddARecordInAPageWithInsufficientSize(t *testing.T) {
 	pageBuilder := NewPageBuilder(30)
-	assert.False(t, pageBuilder.Append([]byte("RocksDB is an LSM-based key/value storage engine")))
+	assert.False(t, pageBuilder.Add([]byte("RocksDB is an LSM-based key/value storage engine")))
 }
 
 func TestAttemptToAddACoupleOfRecordsInAPageWithSizeSufficientForOnlyOneRecord(t *testing.T) {
 	pageBuilder := NewPageBuilder(60)
-	assert.True(t, pageBuilder.Append([]byte("RocksDB is an LSM-based key/value storage engine")))
-	assert.False(t, pageBuilder.Append([]byte("RocksDB is an LSM-based key/value storage engine")))
+	assert.True(t, pageBuilder.Add([]byte("RocksDB is an LSM-based key/value storage engine")))
+	assert.False(t, pageBuilder.Add([]byte("RocksDB is an LSM-based key/value storage engine")))
 }
 
 func TestAttemptToAddACoupleOfRecordsSuccessfullyInAPageWithJustEnoughSize(t *testing.T) {
 	pageBuilder := NewPageBuilder(108)
-	assert.True(t, pageBuilder.Append([]byte("RocksDB is an LSM-based key/value storage engine")))
-	assert.True(t, pageBuilder.Append([]byte("RocksDB is an LSM-based key/value storage engine")))
+	assert.True(t, pageBuilder.Add([]byte("RocksDB is an LSM-based key/value storage engine")))
+	assert.True(t, pageBuilder.Add([]byte("RocksDB is an LSM-based key/value storage engine")))
 }
 
 func TestCreateALogPageWithNoRecords(t *testing.T) {
@@ -36,7 +36,7 @@ func TestCreateALogPageWithNoRecords(t *testing.T) {
 
 func TestCreateALogPageWithASingleRecord(t *testing.T) {
 	pageBuilder := NewPageBuilder(blockSize)
-	pageBuilder.Append([]byte("RocksDB is an LSM-based key/value storage engine"))
+	pageBuilder.Add([]byte("RocksDB is an LSM-based key/value storage engine"))
 
 	page := pageBuilder.Build()
 	iterator := page.BackwardIterator()
@@ -50,8 +50,8 @@ func TestCreateALogPageWithASingleRecord(t *testing.T) {
 
 func TestCreateALogPageWithCoupleOfRecords(t *testing.T) {
 	pageBuilder := NewPageBuilder(blockSize)
-	pageBuilder.Append([]byte("RocksDB is an LSM-based key/value storage engine"))
-	pageBuilder.Append([]byte("PebbleDB is an LSM-based key/value storage engine"))
+	pageBuilder.Add([]byte("RocksDB is an LSM-based key/value storage engine"))
+	pageBuilder.Add([]byte("PebbleDB is an LSM-based key/value storage engine"))
 
 	page := pageBuilder.Build()
 	iterator := page.BackwardIterator()
@@ -73,7 +73,7 @@ func TestCreateALogPageWithFewRecords(t *testing.T) {
 
 	const records = 100
 	for record := 1; record <= records; record++ {
-		pageBuilder.Append([]byte(fmt.Sprintf("Record %d", record)))
+		pageBuilder.Add([]byte(fmt.Sprintf("Record %d", record)))
 	}
 
 	page := pageBuilder.Build()
