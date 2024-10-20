@@ -7,10 +7,12 @@ import (
 var reservedSizeForAType = int(unsafe.Sizeof(uint8(0)))
 
 const (
-	typeUint8  uint8 = 1
-	typeUint16 uint8 = 2
-	typeUint32 uint8 = 3
-	typeUint64 uint8 = 4
+	typeUint8     uint8 = 1
+	typeUint16    uint8 = 2
+	typeUint32    uint8 = 3
+	typeUint64    uint8 = 4
+	typeString    uint8 = 5
+	typeByteSlice uint8 = 6
 )
 
 type Types struct {
@@ -43,6 +45,14 @@ func (types *Types) addTypeDescriptionUint32() {
 
 func (types *Types) addTypeDescriptionUint64() {
 	types.description = append(types.description, typeUint64)
+}
+
+func (types *Types) addTypeDescriptionString() {
+	types.description = append(types.description, typeString)
+}
+
+func (types *Types) addTypeDescriptionByteSlice() {
+	types.description = append(types.description, typeByteSlice)
 }
 
 func (types *Types) encode() []byte {

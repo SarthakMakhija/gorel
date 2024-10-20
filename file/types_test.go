@@ -45,3 +45,25 @@ func TestEncodeAndDecodeTypesWithFewTypeDescriptions(t *testing.T) {
 	assert.Equal(t, typeUint64, decodedTypes.description[2])
 	assert.Equal(t, typeUint32, decodedTypes.description[3])
 }
+
+func TestEncodeAndDecodeTypesWithAStringTypeDescription(t *testing.T) {
+	types := NewTypes()
+	types.addTypeDescriptionString()
+
+	encoded := types.encode()
+	decodedTypes := DecodeTypesFrom(encoded)
+
+	assert.Equal(t, 1, len(decodedTypes.description))
+	assert.Equal(t, typeString, decodedTypes.description[0])
+}
+
+func TestEncodeAndDecodeTypesWithAByteSliceTypeDescription(t *testing.T) {
+	types := NewTypes()
+	types.addTypeDescriptionByteSlice()
+
+	encoded := types.encode()
+	decodedTypes := DecodeTypesFrom(encoded)
+
+	assert.Equal(t, 1, len(decodedTypes.description))
+	assert.Equal(t, typeByteSlice, decodedTypes.description[0])
+}
