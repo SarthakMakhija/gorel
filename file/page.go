@@ -30,6 +30,8 @@ func DecodePageFrom(buffer []byte) Page {
 	}
 }
 
+// TODO: validate index
+// TODO: validate data type present at the given index
 func (page Page) getUint8(index int) uint8 {
 	return page.buffer[page.startingOffsets.OffsetAtIndex(index)]
 }

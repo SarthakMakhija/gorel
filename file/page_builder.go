@@ -29,6 +29,7 @@ func NewPageBuilder(blockSize uint) *PageBuilder {
 	}
 }
 
+// TODO: validate capacity before adding, for all the methods.
 func (builder *PageBuilder) addUint8(value uint8) {
 	builder.addField(
 		func() gorel.BytesNeededForEncoding {
