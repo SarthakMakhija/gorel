@@ -5,6 +5,30 @@ import (
 	"testing"
 )
 
+func TestAttemptToGetTheValueAtAnIndexGreaterThanTheNumberOfAvailableFields(t *testing.T) {
+	pageBuilder := NewPageBuilder(blockSize)
+	pageBuilder.addString("PebbleDB is an LSM-based key/value storage engine")
+
+	page := pageBuilder.build()
+	decodedPage := DecodePageFrom(page.buffer)
+
+	assert.Panics(t, func() {
+		decodedPage.getString(1)
+	})
+}
+
+func TestAttemptToGetTheValueWithMismatchedTypeDescription(t *testing.T) {
+	pageBuilder := NewPageBuilder(blockSize)
+	pageBuilder.addString("PebbleDB is an LSM-based key/value storage engine")
+
+	page := pageBuilder.build()
+	decodedPage := DecodePageFrom(page.buffer)
+
+	assert.Panics(t, func() {
+		decodedPage.getUint8(0)
+	})
+}
+
 func TestDecodeAPageWithASingleField(t *testing.T) {
 	pageBuilder := NewPageBuilder(blockSize)
 	pageBuilder.addString("PebbleDB is an LSM-based key/value storage engine")
