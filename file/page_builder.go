@@ -107,7 +107,7 @@ func (builder *PageBuilder) build() Page {
 	}
 }
 
-func (builder *PageBuilder) addField(encodeFn func() gorel.BytesNeededForEncoding, typeDescription uint8) {
+func (builder *PageBuilder) addField(encodeFn func() gorel.BytesNeededForEncoding, typeDescription Type) {
 	bytesNeededForEncoding := encodeFn()
 	builder.startingOffsets.Append(uint16(builder.currentWriteOffset))
 	builder.types.addTypeDescription(typeDescription)
