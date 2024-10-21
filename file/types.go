@@ -19,12 +19,12 @@ type Types struct {
 	description []uint8
 }
 
-func NewTypes() *Types {
+func newTypes() *Types {
 	return &Types{}
 }
 
-func DecodeTypesFrom(buffer []byte) *Types {
-	types := NewTypes()
+func decodeTypesFrom(buffer []byte) *Types {
+	types := newTypes()
 	for _, description := range buffer {
 		types.description = append(types.description, description)
 	}

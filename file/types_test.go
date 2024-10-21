@@ -6,23 +6,23 @@ import (
 )
 
 func TestEncodeAndDecodeTypesWithASingleTypeDescription(t *testing.T) {
-	types := NewTypes()
+	types := newTypes()
 	types.addTypeDescription(typeUint8)
 
 	encoded := types.encode()
-	decodedTypes := DecodeTypesFrom(encoded)
+	decodedTypes := decodeTypesFrom(encoded)
 
 	assert.Equal(t, 1, len(decodedTypes.description))
 	assert.Equal(t, typeUint8, decodedTypes.description[0])
 }
 
 func TestEncodeAndDecodeTypesWithACoupleOfTypeDescriptions(t *testing.T) {
-	types := NewTypes()
+	types := newTypes()
 	types.addTypeDescription(typeUint16)
 	types.addTypeDescription(typeUint8)
 
 	encoded := types.encode()
-	decodedTypes := DecodeTypesFrom(encoded)
+	decodedTypes := decodeTypesFrom(encoded)
 
 	assert.Equal(t, 2, len(decodedTypes.description))
 	assert.Equal(t, typeUint16, decodedTypes.description[0])
@@ -30,14 +30,14 @@ func TestEncodeAndDecodeTypesWithACoupleOfTypeDescriptions(t *testing.T) {
 }
 
 func TestEncodeAndDecodeTypesWithFewTypeDescriptions(t *testing.T) {
-	types := NewTypes()
+	types := newTypes()
 	types.addTypeDescription(typeUint16)
 	types.addTypeDescription(typeUint8)
 	types.addTypeDescription(typeUint64)
 	types.addTypeDescription(typeUint32)
 
 	encoded := types.encode()
-	decodedTypes := DecodeTypesFrom(encoded)
+	decodedTypes := decodeTypesFrom(encoded)
 
 	assert.Equal(t, 4, len(decodedTypes.description))
 	assert.Equal(t, typeUint16, decodedTypes.description[0])
@@ -47,22 +47,22 @@ func TestEncodeAndDecodeTypesWithFewTypeDescriptions(t *testing.T) {
 }
 
 func TestEncodeAndDecodeTypesWithAStringTypeDescription(t *testing.T) {
-	types := NewTypes()
+	types := newTypes()
 	types.addTypeDescription(typeString)
 
 	encoded := types.encode()
-	decodedTypes := DecodeTypesFrom(encoded)
+	decodedTypes := decodeTypesFrom(encoded)
 
 	assert.Equal(t, 1, len(decodedTypes.description))
 	assert.Equal(t, typeString, decodedTypes.description[0])
 }
 
 func TestEncodeAndDecodeTypesWithAByteSliceTypeDescription(t *testing.T) {
-	types := NewTypes()
+	types := newTypes()
 	types.addTypeDescription(typeByteSlice)
 
 	encoded := types.encode()
-	decodedTypes := DecodeTypesFrom(encoded)
+	decodedTypes := decodeTypesFrom(encoded)
 
 	assert.Equal(t, 1, len(decodedTypes.description))
 	assert.Equal(t, typeByteSlice, decodedTypes.description[0])

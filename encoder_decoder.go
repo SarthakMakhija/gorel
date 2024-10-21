@@ -5,13 +5,20 @@ import (
 	"unsafe"
 )
 
-var reservedSizeForByteSlice = uint(unsafe.Sizeof(uint16(0)))
+var (
+	reservedSizeForByteSlice = uint(unsafe.Sizeof(uint16(0)))
+	uint16Size               = uint(unsafe.Sizeof(uint16(0)))
+	uint32Size               = uint(unsafe.Sizeof(uint32(0)))
+	uint64Size               = uint(unsafe.Sizeof(uint64(0)))
+)
+
+type BytesNeededForEncoding = uint
 
 func BytesNeededForEncodingAByteSlice(buffer []byte) int {
 	return int(reservedSizeForByteSlice) + len(buffer)
 }
 
-func EncodeByteSlice(source []byte, destination []byte, destinationStartingOffset uint) uint {
+func EncodeByteSlice(source []byte, destination []byte, destinationStartingOffset uint) BytesNeededForEncoding {
 	binary.LittleEndian.PutUint16(destination[destinationStartingOffset:], uint16(len(source)))
 	copy(destination[destinationStartingOffset+reservedSizeForByteSlice:], source)
 
@@ -24,24 +31,27 @@ func DecodeByteSlice(source []byte, fromOffset uint16) []byte {
 	return source[fromOffset+uint16(reservedSizeForByteSlice) : endOffset]
 }
 
-func EncodeUint16(source uint16, destination []byte, destinationStartingOffset uint) {
+func EncodeUint16(source uint16, destination []byte, destinationStartingOffset uint) BytesNeededForEncoding {
 	binary.LittleEndian.PutUint16(destination[destinationStartingOffset:], source)
+	return uint16Size
 }
 
 func DecodeUint16(source []byte, fromOffset uint16) uint16 {
 	return binary.LittleEndian.Uint16(source[fromOffset:])
 }
 
-func EncodeUint32(source uint32, destination []byte, destinationStartingOffset uint) {
+func EncodeUint32(source uint32, destination []byte, destinationStartingOffset uint) BytesNeededForEncoding {
 	binary.LittleEndian.PutUint32(destination[destinationStartingOffset:], source)
+	return uint32Size
 }
 
 func DecodeUint32(source []byte, fromOffset uint16) uint32 {
 	return binary.LittleEndian.Uint32(source[fromOffset:])
 }
 
-func EncodeUint64(source uint64, destination []byte, destinationStartingOffset uint) {
+func EncodeUint64(source uint64, destination []byte, destinationStartingOffset uint) BytesNeededForEncoding {
 	binary.LittleEndian.PutUint64(destination[destinationStartingOffset:], source)
+	return uint64Size
 }
 
 func DecodeUint64(source []byte, fromOffset uint16) uint64 {
