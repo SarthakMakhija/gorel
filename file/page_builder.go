@@ -6,7 +6,10 @@ import (
 	"unsafe"
 )
 
-var reservedSizeForNumberOfOffsets = int(unsafe.Sizeof(uint16(0)))
+var (
+	reservedSizeForNumberOfOffsets = int(unsafe.Sizeof(uint16(0)))
+	uint8Size                      = uint(unsafe.Sizeof(uint8(0)))
+)
 
 type PageBuilder struct {
 	buffer             []byte
@@ -81,7 +84,7 @@ func (builder *PageBuilder) addString(str string) {
 	)
 }
 
-func (builder *PageBuilder) build() Page1 {
+func (builder *PageBuilder) build() Page {
 	resultingBuffer := builder.buffer
 
 	encodedStartingOffsets := builder.startingOffsets.Encode()
@@ -96,7 +99,7 @@ func (builder *PageBuilder) build() Page1 {
 	binary.LittleEndian.PutUint16(resultingBuffer[len(resultingBuffer)-reservedSizeForNumberOfOffsets:], uint16(builder.startingOffsets.Length()))
 	binary.LittleEndian.PutUint16(resultingBuffer[len(resultingBuffer)-reservedSizeForNumberOfOffsets-reservedSizeForNumberOfOffsets:], uint16(offsetToWriteTheEncodedStartingOffsets))
 
-	return Page1{
+	return Page{
 		buffer:          resultingBuffer,
 		startingOffsets: builder.startingOffsets,
 		types:           builder.types,

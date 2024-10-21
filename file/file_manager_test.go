@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+const blockSize = 4096
+
 func TestWriteAPageUsingBlockFileManager(t *testing.T) {
 	fileManager, err := NewBlockFileManager(".", blockSize)
 	assert.Nil(t, err)
@@ -15,13 +17,13 @@ func TestWriteAPageUsingBlockFileManager(t *testing.T) {
 		_ = os.Remove(t.Name())
 	}()
 
-	page := NewPage(blockSize)
-	page.setBytes([]byte("RockDB is an LSM-based storage engine"))
+	pageBuilder := NewPageBuilder(blockSize)
+	pageBuilder.addBytes([]byte("RockDB is an LSM-based storage engine"))
 
 	fileName := t.Name()
 	blockId := NewBlockId(fileName, 3)
 
-	err = fileManager.Write(blockId, page)
+	err = fileManager.Write(blockId, pageBuilder.build())
 	assert.Nil(t, err)
 }
 
@@ -34,23 +36,21 @@ func TestWriteAPageAtBlockZeroAndThenReadItUsingBlockFileManager(t *testing.T) {
 		_ = os.Remove(t.Name())
 	}()
 
-	page := NewPage(blockSize)
-	page.setUint32(uint32(500))
-	page.setString("RockDB is an LSM-based storage engine")
+	pageBuilder := NewPageBuilder(blockSize)
+	pageBuilder.addUint32(500)
+	pageBuilder.addString("RockDB is an LSM-based storage engine")
 
 	fileName := t.Name()
 	blockId := NewBlockId(fileName, 0)
 
-	err = fileManager.Write(blockId, page)
+	err = fileManager.Write(blockId, pageBuilder.build())
 	assert.Nil(t, err)
 
-	readPage := NewPage(blockSize)
-
-	err = fileManager.ReadInto(blockId, readPage)
+	readPage, err := fileManager.Read(blockId)
 	assert.Nil(t, err)
 
-	assert.Equal(t, uint32(500), readPage.getUint32())
-	assert.Equal(t, "RockDB is an LSM-based storage engine", readPage.getString())
+	assert.Equal(t, uint32(500), readPage.getUint32(0))
+	assert.Equal(t, "RockDB is an LSM-based storage engine", readPage.getString(1))
 }
 
 func TestWriteAPageAtBlockHigherThanZeroAndThenReadItUsingBlockFileManager(t *testing.T) {
@@ -62,21 +62,19 @@ func TestWriteAPageAtBlockHigherThanZeroAndThenReadItUsingBlockFileManager(t *te
 		_ = os.Remove(t.Name())
 	}()
 
-	page := NewPage(blockSize)
-	page.setUint32(uint32(500))
-	page.setString("PebbleDB is an LSM-based storage engine")
+	pageBuilder := NewPageBuilder(blockSize)
+	pageBuilder.addUint32(500)
+	pageBuilder.addString("PebbleDB is an LSM-based storage engine")
 
 	fileName := t.Name()
 	blockId := NewBlockId(fileName, 10)
 
-	err = fileManager.Write(blockId, page)
+	err = fileManager.Write(blockId, pageBuilder.build())
 	assert.Nil(t, err)
 
-	readPage := NewPage(blockSize)
-
-	err = fileManager.ReadInto(blockId, readPage)
+	readPage, err := fileManager.Read(blockId)
 	assert.Nil(t, err)
 
-	assert.Equal(t, uint32(500), readPage.getUint32())
-	assert.Equal(t, "PebbleDB is an LSM-based storage engine", readPage.getString())
+	assert.Equal(t, uint32(500), readPage.getUint32(0))
+	assert.Equal(t, "PebbleDB is an LSM-based storage engine", readPage.getString(1))
 }
