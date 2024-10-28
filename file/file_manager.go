@@ -53,6 +53,26 @@ func (fileManager *BlockFileManager) Write(blockId BlockId, page gorel.Page) err
 	})
 }
 
+func (fileManager *BlockFileManager) AppendEmptyBlock(fileName string) (BlockId, error) {
+	newBlockNumber, err := fileManager.newBlockNumberFor(fileName)
+	if err != nil {
+		return BlockId{}, err
+	}
+	file, err := fileManager.getOrCreateFile(fileName)
+	if err != nil {
+		return BlockId{}, err
+	}
+
+	blockId := NewBlockId(fileName, uint(newBlockNumber))
+	if _, err = file.Seek(blockId.offset(fileManager.blockSize), 0); err != nil {
+		return BlockId{}, err
+	}
+	if _, err = file.Write(make([]byte, 0)); err != nil {
+		return BlockId{}, err
+	}
+	return blockId, nil
+}
+
 func (fileManager *BlockFileManager) Close() {
 	for _, file := range fileManager.openFiles {
 		if file != nil {
@@ -63,6 +83,18 @@ func (fileManager *BlockFileManager) Close() {
 
 func (fileManager *BlockFileManager) BlockSize() uint {
 	return fileManager.blockSize
+}
+
+func (fileManager *BlockFileManager) newBlockNumberFor(fileName string) (int64, error) {
+	file, err := fileManager.getOrCreateFile(fileName)
+	if err != nil {
+		return 0, err
+	}
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return 0, err
+	}
+	return fileInfo.Size() / int64(fileManager.blockSize), nil
 }
 
 func (fileManager *BlockFileManager) seekWithinFileAndRun(blockId BlockId, block func(*os.File) error) error {

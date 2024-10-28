@@ -108,3 +108,43 @@ func TestWriteAPageAtBlockHigherThanZeroAndThenReadItUsingBlockFileManager(t *te
 
 	assert.Equal(t, "PebbleDB is an LSM-based storage engine", string(readPage.getBytes(0)))
 }
+
+func TestAppendAnEmptyBlockUsingBlockFileManager(t *testing.T) {
+	fileManager, err := NewBlockFileManager(".", blockSize)
+	assert.Nil(t, err)
+
+	defer func() {
+		fileManager.Close()
+		_ = os.Remove(t.Name())
+	}()
+
+	fileName := t.Name()
+	blockId, err := fileManager.AppendEmptyBlock(fileName)
+	assert.Nil(t, err)
+
+	assert.Equal(t, uint(0), blockId.blockNumber)
+}
+
+func TestAppendACoupleOfEmptyBlocksUsingBlockFileManager(t *testing.T) {
+	fileManager, err := NewBlockFileManager(".", blockSize)
+	assert.Nil(t, err)
+
+	defer func() {
+		fileManager.Close()
+		_ = os.Remove(t.Name())
+	}()
+
+	fileName := t.Name()
+	blockId, err := fileManager.AppendEmptyBlock(fileName)
+	assert.Nil(t, err)
+
+	page := newTestPage(blockSize)
+	page.add([]byte("PebbleDB is an LSM-based storage engine"))
+
+	assert.Nil(t, fileManager.Write(blockId, page))
+
+	blockId, err = fileManager.AppendEmptyBlock(fileName)
+	assert.Nil(t, err)
+
+	assert.Equal(t, uint(1), blockId.blockNumber)
+}
