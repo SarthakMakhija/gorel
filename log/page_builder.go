@@ -32,7 +32,7 @@ func (builder *PageBuilder) Add(buffer []byte) bool {
 	return false
 }
 
-func (builder *PageBuilder) Build() Page {
+func (builder *PageBuilder) Build() *Page {
 	resultingBuffer := builder.buffer
 
 	encodedStartingOffsets := builder.startingOffsets.Encode()

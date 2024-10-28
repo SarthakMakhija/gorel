@@ -15,34 +15,39 @@ type Page struct {
 }
 
 type BackwardRecordIterator struct {
-	page        Page
+	page        *Page
 	offsetIndex int
 }
 
-func NewPage(buffer []byte, startingOffsets *file.StartingOffsets) Page {
-	return Page{
+func NewPage(buffer []byte, startingOffsets *file.StartingOffsets) *Page {
+	return &Page{
 		buffer:          buffer,
 		startingOffsets: startingOffsets,
 	}
 }
 
-func DecodePageFrom(buffer []byte) Page {
+func (page *Page) DecodeFrom(buffer []byte) {
 	numberOfOffsets := binary.LittleEndian.Uint16(buffer[len(buffer)-reservedSizeForNumberOfOffsets:])
 	offsetAtWhichEncodedStartingOffsetsAreWritten := binary.LittleEndian.Uint16(buffer[len(buffer)-reservedSizeForNumberOfOffsets-reservedSizeForNumberOfOffsets:])
 	startingOffsets := file.DecodeStartingOffsetsFrom(
 		buffer[offsetAtWhichEncodedStartingOffsetsAreWritten : int(offsetAtWhichEncodedStartingOffsetsAreWritten)+reservedSizeForNumberOfOffsets*int(numberOfOffsets)],
 	)
-	return NewPage(buffer, startingOffsets)
+	page.buffer = buffer
+	page.startingOffsets = startingOffsets
 }
 
-func (page Page) BackwardIterator() *BackwardRecordIterator {
+func (page *Page) Content() []byte {
+	return page.buffer
+}
+
+func (page *Page) BackwardIterator() *BackwardRecordIterator {
 	return &BackwardRecordIterator{
 		page:        page,
 		offsetIndex: page.startingOffsets.Length() - 1,
 	}
 }
 
-func (page Page) getBytesAt(offset uint16) []byte {
+func (page *Page) getBytesAt(offset uint16) []byte {
 	return gorel.DecodeByteSlice(page.buffer, offset)
 }
 

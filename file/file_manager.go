@@ -40,7 +40,7 @@ func (fileManager *BlockFileManager) ReadInto(blockId BlockId, page gorel.Page) 
 	if err != nil {
 		return err
 	}
-	page.DecodePageFrom(buffer)
+	page.DecodeFrom(buffer)
 	return nil
 }
 

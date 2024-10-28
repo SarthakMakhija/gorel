@@ -12,7 +12,7 @@ type Page struct {
 	types           *file.Types
 }
 
-func (page *Page) DecodePageFrom(buffer []byte) {
+func (page *Page) DecodeFrom(buffer []byte) {
 	numberOfOffsets := binary.LittleEndian.Uint16(buffer[len(buffer)-reservedSizeForNumberOfOffsets:])
 	numberOfTypeDescriptions := numberOfOffsets
 

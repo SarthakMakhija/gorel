@@ -11,7 +11,8 @@ func TestDecodeAPageWithASingleRecord(t *testing.T) {
 	pageBuilder.Add([]byte("RocksDB is an LSM-based key/value storage engine"))
 
 	page := pageBuilder.Build()
-	decodedPage := DecodePageFrom(page.buffer)
+	decodedPage := &Page{}
+	decodedPage.DecodeFrom(page.buffer)
 
 	iterator := decodedPage.BackwardIterator()
 
@@ -28,7 +29,8 @@ func TestDecodeAPageWithCoupleOfRecords(t *testing.T) {
 	pageBuilder.Add([]byte("PebbleDB is an LSM-based key/value storage engine"))
 
 	page := pageBuilder.Build()
-	decodedPage := DecodePageFrom(page.buffer)
+	decodedPage := &Page{}
+	decodedPage.DecodeFrom(page.buffer)
 
 	iterator := decodedPage.BackwardIterator()
 
@@ -53,7 +55,9 @@ func TestDecodeAPageWithFewRecords(t *testing.T) {
 	}
 
 	page := pageBuilder.Build()
-	decodedPage := DecodePageFrom(page.buffer)
+	decodedPage := &Page{}
+	decodedPage.DecodeFrom(page.buffer)
+
 	iterator := decodedPage.BackwardIterator()
 
 	for record := 100; record >= 1; record-- {

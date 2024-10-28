@@ -1,6 +1,6 @@
 package gorel
 
 type Page interface {
-	DecodePageFrom([]byte)
+	DecodeFrom([]byte)
 	Content() []byte
 }
