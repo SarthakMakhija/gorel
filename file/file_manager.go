@@ -54,7 +54,7 @@ func (fileManager *BlockFileManager) Write(blockId BlockId, page gorel.Page) err
 }
 
 func (fileManager *BlockFileManager) AppendEmptyBlock(fileName string) (BlockId, error) {
-	newBlockNumber, err := fileManager.newBlockNumberFor(fileName)
+	newBlockNumber, err := fileManager.NumberOfBlocks(fileName)
 	if err != nil {
 		return BlockId{}, err
 	}
@@ -85,7 +85,7 @@ func (fileManager *BlockFileManager) BlockSize() uint {
 	return fileManager.blockSize
 }
 
-func (fileManager *BlockFileManager) newBlockNumberFor(fileName string) (int64, error) {
+func (fileManager *BlockFileManager) NumberOfBlocks(fileName string) (int64, error) {
 	file, err := fileManager.getOrCreateFile(fileName)
 	if err != nil {
 		return 0, err
