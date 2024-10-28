@@ -1,6 +1,7 @@
 package file
 
 import (
+	"gorel"
 	"os"
 	"path/filepath"
 )
@@ -28,7 +29,7 @@ func NewBlockFileManager(dbDirectory string, blockSize uint) (*BlockFileManager,
 	}, nil
 }
 
-func (fileManager *BlockFileManager) Read(blockId BlockId) (Page, error) {
+func (fileManager *BlockFileManager) ReadInto(blockId BlockId, page gorel.Page) error {
 	buffer := make([]byte, fileManager.blockSize)
 	err := fileManager.seekWithinFileAndRun(blockId, func(file *os.File) error {
 		if _, err := file.Read(buffer); err != nil {
@@ -37,14 +38,15 @@ func (fileManager *BlockFileManager) Read(blockId BlockId) (Page, error) {
 		return nil
 	})
 	if err != nil {
-		return Page{}, err
+		return err
 	}
-	return DecodePageFrom(buffer), nil
+	page.DecodePageFrom(buffer)
+	return nil
 }
 
-func (fileManager *BlockFileManager) Write(blockId BlockId, page Page) error {
+func (fileManager *BlockFileManager) Write(blockId BlockId, page gorel.Page) error {
 	return fileManager.seekWithinFileAndRun(blockId, func(file *os.File) error {
-		if _, err := file.Write(page.buffer); err != nil {
+		if _, err := file.Write(page.Content()); err != nil {
 			return err
 		}
 		return nil

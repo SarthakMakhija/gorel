@@ -1,8 +1,9 @@
-package file
+package buffer
 
 import (
 	"encoding/binary"
 	"gorel"
+	"gorel/file"
 	"unsafe"
 )
 
@@ -13,8 +14,8 @@ var (
 
 type PageBuilder struct {
 	buffer             []byte
-	startingOffsets    *StartingOffsets
-	types              *Types
+	startingOffsets    *file.StartingOffsets
+	types              *file.Types
 	currentWriteOffset uint
 	blockSize          uint
 }
@@ -22,74 +23,74 @@ type PageBuilder struct {
 func NewPageBuilder(blockSize uint) *PageBuilder {
 	return &PageBuilder{
 		buffer:             make([]byte, blockSize),
-		startingOffsets:    NewStartingOffsets(),
-		types:              newTypes(),
+		startingOffsets:    file.NewStartingOffsets(),
+		types:              file.NewTypes(),
 		currentWriteOffset: 0,
 		blockSize:          blockSize,
 	}
 }
 
-// TODO: validate capacity before adding, for all the methods.
-func (builder *PageBuilder) addUint8(value uint8) {
+// AddUint8 TODO: validate capacity before adding, for all the methods.
+func (builder *PageBuilder) AddUint8(value uint8) {
 	builder.addField(
 		func() gorel.BytesNeededForEncoding {
 			builder.buffer[builder.currentWriteOffset] = value
 			return uint8Size
 		},
-		typeUint8,
+		file.TypeUint8,
 	)
 }
 
-func (builder *PageBuilder) addUint16(value uint16) {
+func (builder *PageBuilder) AddUint16(value uint16) {
 	builder.addField(
 		func() gorel.BytesNeededForEncoding {
 			return gorel.EncodeUint16(value, builder.buffer, builder.currentWriteOffset)
 		},
-		typeUint16,
+		file.TypeUint16,
 	)
 }
 
-func (builder *PageBuilder) addUint32(value uint32) {
+func (builder *PageBuilder) AddUint32(value uint32) {
 	builder.addField(
 		func() gorel.BytesNeededForEncoding {
 			return gorel.EncodeUint32(value, builder.buffer, builder.currentWriteOffset)
 		},
-		typeUint32,
+		file.TypeUint32,
 	)
 }
 
-func (builder *PageBuilder) addUint64(value uint64) {
+func (builder *PageBuilder) AddUint64(value uint64) {
 	builder.addField(
 		func() gorel.BytesNeededForEncoding {
 			return gorel.EncodeUint64(value, builder.buffer, builder.currentWriteOffset)
 		},
-		typeUint64,
+		file.TypeUint64,
 	)
 }
 
-func (builder *PageBuilder) addBytes(buffer []byte) {
+func (builder *PageBuilder) AddBytes(buffer []byte) {
 	builder.addField(
 		func() gorel.BytesNeededForEncoding {
 			return gorel.EncodeByteSlice(buffer, builder.buffer, builder.currentWriteOffset)
 		},
-		typeByteSlice,
+		file.TypeByteSlice,
 	)
 }
 
-func (builder *PageBuilder) addString(str string) {
+func (builder *PageBuilder) AddString(str string) {
 	builder.addField(
 		func() gorel.BytesNeededForEncoding {
 			return gorel.EncodeByteSlice([]byte(str), builder.buffer, builder.currentWriteOffset)
 		},
-		typeString,
+		file.TypeString,
 	)
 }
 
-func (builder *PageBuilder) build() Page {
+func (builder *PageBuilder) Build() *Page {
 	resultingBuffer := builder.buffer
 
 	encodedStartingOffsets := builder.startingOffsets.Encode()
-	encodedTypeDescription := builder.types.encode()
+	encodedTypeDescription := builder.types.Encode()
 
 	offsetToWriteTheEncodedStartingOffsets := builder.currentWriteOffset
 	copy(resultingBuffer[offsetToWriteTheEncodedStartingOffsets:], encodedStartingOffsets)
@@ -100,17 +101,17 @@ func (builder *PageBuilder) build() Page {
 	binary.LittleEndian.PutUint16(resultingBuffer[len(resultingBuffer)-reservedSizeForNumberOfOffsets:], uint16(builder.startingOffsets.Length()))
 	binary.LittleEndian.PutUint16(resultingBuffer[len(resultingBuffer)-reservedSizeForNumberOfOffsets-reservedSizeForNumberOfOffsets:], uint16(offsetToWriteTheEncodedStartingOffsets))
 
-	return Page{
+	return &Page{
 		buffer:          resultingBuffer,
 		startingOffsets: builder.startingOffsets,
 		types:           builder.types,
 	}
 }
 
-func (builder *PageBuilder) addField(encodeFn func() gorel.BytesNeededForEncoding, typeDescription Type) {
+func (builder *PageBuilder) addField(encodeFn func() gorel.BytesNeededForEncoding, typeDescription file.Type) {
 	bytesNeededForEncoding := encodeFn()
 	builder.startingOffsets.Append(uint16(builder.currentWriteOffset))
-	builder.types.addTypeDescription(typeDescription)
+	builder.types.AddTypeDescription(typeDescription)
 	builder.moveCurrentWriteOffsetBy(bytesNeededForEncoding)
 }
 
