@@ -50,7 +50,7 @@ func TestWriteAPageUsingBlockFileManager(t *testing.T) {
 	}()
 
 	page := newTestPage(blockSize)
-	page.add([]byte("RockDB is an LSM-based storage engine"))
+	page.add([]byte("RocksDB is an LSM-based storage engine"))
 
 	fileName := t.Name()
 	blockId := NewBlockId(fileName, 3)
@@ -69,7 +69,7 @@ func TestWriteAPageAtBlockZeroAndThenReadItUsingBlockFileManager(t *testing.T) {
 	}()
 
 	page := newTestPage(blockSize)
-	page.add([]byte("RockDB is an LSM-based storage engine"))
+	page.add([]byte("RocksDB is an LSM-based storage engine"))
 
 	fileName := t.Name()
 	blockId := NewBlockId(fileName, 0)
@@ -81,7 +81,7 @@ func TestWriteAPageAtBlockZeroAndThenReadItUsingBlockFileManager(t *testing.T) {
 	err = fileManager.ReadInto(blockId, readPage)
 	assert.Nil(t, err)
 
-	assert.Equal(t, "RockDB is an LSM-based storage engine", string(readPage.getBytes(0)))
+	assert.Equal(t, "RocksDB is an LSM-based storage engine", string(readPage.getBytes(0)))
 }
 
 func TestWriteAPageAtBlockHigherThanZeroAndThenReadItUsingBlockFileManager(t *testing.T) {
