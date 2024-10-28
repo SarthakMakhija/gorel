@@ -31,6 +31,12 @@ func DecodeByteSlice(source []byte, fromOffset uint16) []byte {
 	return source[fromOffset+uint16(reservedSizeForByteSlice) : endOffset]
 }
 
+func DecodeByteSliceWithEndOffset(source []byte, fromOffset uint16) ([]byte, uint16) {
+	byteSliceLength := binary.LittleEndian.Uint16(source[fromOffset:])
+	endOffset := fromOffset + uint16(reservedSizeForByteSlice) + byteSliceLength
+	return source[fromOffset+uint16(reservedSizeForByteSlice) : endOffset], endOffset
+}
+
 func EncodeUint16(source uint16, destination []byte, destinationStartingOffset uint) BytesNeededForEncoding {
 	binary.LittleEndian.PutUint16(destination[destinationStartingOffset:], source)
 	return uint16Size
