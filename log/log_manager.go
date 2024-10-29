@@ -45,7 +45,7 @@ func NewBlockLogManager(fileManager *file.BlockFileManager, logFile string) (*Bl
 func (logManager *BlockLogManager) Append(buffer []byte) error {
 	couldAdd := logManager.logPage.Add(buffer)
 	if !couldAdd {
-		if err := logManager.flush(); err != nil {
+		if err := logManager.forceFlush(); err != nil {
 			return err
 		}
 		blockId, err := logManager.appendNewBlock()
@@ -60,25 +60,25 @@ func (logManager *BlockLogManager) Append(buffer []byte) error {
 	return nil
 }
 
+func (logManager *BlockLogManager) Flush(logSequenceNumber uint) error {
+	if logSequenceNumber >= logManager.lastSavedLogSequenceNumber {
+		return logManager.forceFlush()
+	}
+	return nil
+}
+
 func (logManager *BlockLogManager) BackwardIterator() (*BackwardLogIterator, error) {
-	if err := logManager.flush(); err != nil {
+	if err := logManager.forceFlush(); err != nil {
 		return nil, err
 	}
 	return NewBackwardLogIterator(logManager.fileManager, logManager.currentBlockId)
-}
-
-func (logManager *BlockLogManager) ForceFlush(logSequenceNumber uint) error {
-	if logSequenceNumber >= logManager.lastSavedLogSequenceNumber {
-		return logManager.flush()
-	}
-	return nil
 }
 
 func (logManager *BlockLogManager) appendNewBlock() (file.BlockId, error) {
 	return logManager.fileManager.AppendEmptyBlock(logManager.logFile)
 }
 
-func (logManager *BlockLogManager) flush() error {
+func (logManager *BlockLogManager) forceFlush() error {
 	logManager.logPage.Finish()
 	if err := logManager.fileManager.Write(logManager.currentBlockId, logManager.logPage); err != nil {
 		return err

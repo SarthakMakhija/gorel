@@ -27,10 +27,11 @@ func NewPage(blockSize uint) *Page {
 
 func (page *Page) DecodeFrom(buffer []byte) {
 	numberOfOffsets := binary.LittleEndian.Uint16(buffer[len(buffer)-reservedSizeForNumberOfOffsets:])
-	offsetAtWhichEncodedStartingOffsetsAreWritten := binary.LittleEndian.Uint16(buffer[len(buffer)-reservedSizeForNumberOfOffsets-reservedSizeForNumberOfOffsets:])
+	offsetAtWhichEncodedStartingOffsetsAreWritten := len(buffer) - reservedSizeForNumberOfOffsets - file.SizeUsedInBytesFor(numberOfOffsets)
 	startingOffsets := file.DecodeStartingOffsetsFrom(
-		buffer[offsetAtWhichEncodedStartingOffsetsAreWritten : int(offsetAtWhichEncodedStartingOffsetsAreWritten)+reservedSizeForNumberOfOffsets*int(numberOfOffsets)],
+		buffer[offsetAtWhichEncodedStartingOffsetsAreWritten : offsetAtWhichEncodedStartingOffsetsAreWritten+file.SizeUsedInBytesFor(numberOfOffsets)],
 	)
+
 	page.buffer = buffer
 	page.startingOffsets = startingOffsets
 	page.updateCurrentWriteOffset()
@@ -50,11 +51,10 @@ func (page *Page) Finish() {
 	resultingBuffer := page.buffer
 
 	encodedStartingOffsets := page.startingOffsets.Encode()
-	offsetToWriteTheEncodedStartingOffsets := page.currentWriteOffset
-	copy(resultingBuffer[offsetToWriteTheEncodedStartingOffsets:], encodedStartingOffsets)
+	offsetToWriteTheEncodedStartingOffsets := len(resultingBuffer) - reservedSizeForNumberOfOffsets - page.startingOffsets.SizeUsedInBytes()
 
+	copy(resultingBuffer[offsetToWriteTheEncodedStartingOffsets:], encodedStartingOffsets)
 	binary.LittleEndian.PutUint16(resultingBuffer[len(resultingBuffer)-reservedSizeForNumberOfOffsets:], uint16(page.startingOffsets.Length()))
-	binary.LittleEndian.PutUint16(resultingBuffer[len(resultingBuffer)-reservedSizeForNumberOfOffsets-reservedSizeForNumberOfOffsets:], uint16(offsetToWriteTheEncodedStartingOffsets))
 }
 
 func (page *Page) Content() []byte {

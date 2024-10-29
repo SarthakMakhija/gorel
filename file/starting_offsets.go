@@ -53,3 +53,7 @@ func (startingOffsets *StartingOffsets) SizeInBytesForAnOffset() int {
 func (startingOffsets *StartingOffsets) SizeUsedInBytes() int {
 	return reservedSizeForAnOffset * len(startingOffsets.offsets)
 }
+
+func SizeUsedInBytesFor(numberOfOffsets uint16) int {
+	return reservedSizeForAnOffset * int(numberOfOffsets)
+}
