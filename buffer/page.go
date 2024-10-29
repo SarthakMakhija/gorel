@@ -4,12 +4,28 @@ import (
 	"encoding/binary"
 	"gorel"
 	"gorel/file"
+	"unsafe"
+)
+
+var (
+	reservedSizeForNumberOfOffsets = int(unsafe.Sizeof(uint16(0)))
+	uint8Size                      = uint(unsafe.Sizeof(uint8(0)))
 )
 
 type Page struct {
-	buffer          []byte
-	startingOffsets *file.StartingOffsets
-	types           *file.Types
+	buffer             []byte
+	startingOffsets    *file.StartingOffsets
+	types              *file.Types
+	currentWriteOffset uint
+}
+
+func NewPage(blockSize uint) *Page {
+	return &Page{
+		buffer:             make([]byte, blockSize),
+		startingOffsets:    file.NewStartingOffsets(),
+		types:              file.NewTypes(),
+		currentWriteOffset: 0,
+	}
 }
 
 func (page *Page) DecodeFrom(buffer []byte) {
@@ -27,6 +43,78 @@ func (page *Page) DecodeFrom(buffer []byte) {
 	page.buffer = buffer
 	page.startingOffsets = startingOffsets
 	page.types = types
+}
+
+// AddUint8 TODO: validate capacity before adding, for all the methods.
+func (page *Page) AddUint8(value uint8) {
+	page.addField(
+		func() gorel.BytesNeededForEncoding {
+			page.buffer[page.currentWriteOffset] = value
+			return uint8Size
+		},
+		file.TypeUint8,
+	)
+}
+
+func (page *Page) AddUint16(value uint16) {
+	page.addField(
+		func() gorel.BytesNeededForEncoding {
+			return gorel.EncodeUint16(value, page.buffer, page.currentWriteOffset)
+		},
+		file.TypeUint16,
+	)
+}
+
+func (page *Page) AddUint32(value uint32) {
+	page.addField(
+		func() gorel.BytesNeededForEncoding {
+			return gorel.EncodeUint32(value, page.buffer, page.currentWriteOffset)
+		},
+		file.TypeUint32,
+	)
+}
+
+func (page *Page) AddUint64(value uint64) {
+	page.addField(
+		func() gorel.BytesNeededForEncoding {
+			return gorel.EncodeUint64(value, page.buffer, page.currentWriteOffset)
+		},
+		file.TypeUint64,
+	)
+}
+
+func (page *Page) AddBytes(buffer []byte) {
+	page.addField(
+		func() gorel.BytesNeededForEncoding {
+			return gorel.EncodeByteSlice(buffer, page.buffer, page.currentWriteOffset)
+		},
+		file.TypeByteSlice,
+	)
+}
+
+func (page *Page) AddString(str string) {
+	page.addField(
+		func() gorel.BytesNeededForEncoding {
+			return gorel.EncodeByteSlice([]byte(str), page.buffer, page.currentWriteOffset)
+		},
+		file.TypeString,
+	)
+}
+
+func (page *Page) Finish() {
+	resultingBuffer := page.buffer
+
+	encodedStartingOffsets := page.startingOffsets.Encode()
+	encodedTypeDescription := page.types.Encode()
+
+	offsetToWriteTheEncodedStartingOffsets := page.currentWriteOffset
+	copy(resultingBuffer[offsetToWriteTheEncodedStartingOffsets:], encodedStartingOffsets)
+
+	offsetToWriteTypeDescription := offsetToWriteTheEncodedStartingOffsets + uint(len(encodedStartingOffsets))
+	copy(resultingBuffer[offsetToWriteTypeDescription:], encodedTypeDescription)
+
+	binary.LittleEndian.PutUint16(resultingBuffer[len(resultingBuffer)-reservedSizeForNumberOfOffsets:], uint16(page.startingOffsets.Length()))
+	binary.LittleEndian.PutUint16(resultingBuffer[len(resultingBuffer)-reservedSizeForNumberOfOffsets-reservedSizeForNumberOfOffsets:], uint16(offsetToWriteTheEncodedStartingOffsets))
 }
 
 func (page *Page) Content() []byte {
@@ -85,4 +173,15 @@ func (page *Page) assertTypeDescriptionMatch(expectedTypeDescription, actualType
 		expectedTypeDescription.AsString(),
 		actualTypeDescription.AsString(),
 	)
+}
+
+func (page *Page) addField(encodeFn func() gorel.BytesNeededForEncoding, typeDescription file.Type) {
+	bytesNeededForEncoding := encodeFn()
+	page.startingOffsets.Append(uint16(page.currentWriteOffset))
+	page.types.AddTypeDescription(typeDescription)
+	page.moveCurrentWriteOffsetBy(bytesNeededForEncoding)
+}
+
+func (page *Page) moveCurrentWriteOffsetBy(offset uint) {
+	page.currentWriteOffset += offset
 }
