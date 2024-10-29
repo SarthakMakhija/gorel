@@ -29,7 +29,7 @@ func TestCreateAPageWithFewFields(t *testing.T) {
 	assert.Equal(t, uint16(100), page.GetUint16(3))
 }
 
-func TestCreateAPageByteSliceAndString(t *testing.T) {
+func TestCreateAPageWithByteSliceAndString(t *testing.T) {
 	page := NewPage(blockSize)
 	page.AddBytes([]byte("RocksDB is an LSM-based key/value storage engine"))
 	page.AddString("PebbleDB is an LSM-based key/value storage engine")
