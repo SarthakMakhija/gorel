@@ -20,6 +20,7 @@ func NewBuffer(fileManager *file.BlockFileManager, logManager *log.BlockLogManag
 		fileManager:       fileManager,
 		logManager:        logManager,
 		page:              NewPage(fileManager.BlockSize()),
+		blockId:           file.MissingBlockId,
 		pins:              0,
 		transactionNumber: -1,
 	}

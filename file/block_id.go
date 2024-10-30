@@ -5,6 +5,10 @@ type BlockId struct {
 	blockNumber uint
 }
 
+const missingFileName = "FILE@NONE@"
+
+var MissingBlockId = BlockId{fileName: missingFileName}
+
 func NewBlockId(fileName string, blockNumber uint) BlockId {
 	return BlockId{
 		fileName:    fileName,
@@ -22,4 +26,8 @@ func (blockId BlockId) BlockNumber() uint {
 
 func (blockId BlockId) Previous() BlockId {
 	return NewBlockId(blockId.fileName, blockId.blockNumber-1)
+}
+
+func (blockId BlockId) IsMissing() bool {
+	return blockId.fileName == missingFileName
 }
