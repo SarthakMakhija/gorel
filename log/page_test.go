@@ -28,7 +28,7 @@ func TestAttemptToAddACoupleOfRecordsSuccessfullyInAPageWithJustEnoughSize(t *te
 func TestCreateALogPageWithNoRecords(t *testing.T) {
 	page := NewPage(blockSize)
 
-	page.Finish()
+	page.finish()
 	iterator := page.BackwardIterator()
 
 	assert.False(t, iterator.IsValid())
@@ -38,7 +38,7 @@ func TestCreateALogPageWithASingleRecord(t *testing.T) {
 	page := NewPage(blockSize)
 	page.Add([]byte("RocksDB is an LSM-based key/value storage engine"))
 
-	page.Finish()
+	page.finish()
 	iterator := page.BackwardIterator()
 
 	assert.True(t, iterator.IsValid())
@@ -53,7 +53,7 @@ func TestCreateALogPageWithCoupleOfRecords(t *testing.T) {
 	page.Add([]byte("RocksDB is an LSM-based key/value storage engine"))
 	page.Add([]byte("PebbleDB is an LSM-based key/value storage engine"))
 
-	page.Finish()
+	page.finish()
 	iterator := page.BackwardIterator()
 
 	assert.True(t, iterator.IsValid())
@@ -76,7 +76,7 @@ func TestCreateALogPageWithFewRecords(t *testing.T) {
 		page.Add([]byte(fmt.Sprintf("Record %d", record)))
 	}
 
-	page.Finish()
+	page.finish()
 	iterator := page.BackwardIterator()
 
 	for record := 100; record >= 1; record-- {
@@ -90,7 +90,7 @@ func TestCreateALogPageWithFewRecords(t *testing.T) {
 func TestDecodeAPageWithASingleRecord(t *testing.T) {
 	page := NewPage(blockSize)
 	page.Add([]byte("RocksDB is an LSM-based key/value storage engine"))
-	page.Finish()
+	page.finish()
 
 	decodedPage := &Page{}
 	decodedPage.DecodeFrom(page.buffer)
@@ -108,7 +108,7 @@ func TestDecodeAPageWithCoupleOfRecords(t *testing.T) {
 	page := NewPage(blockSize)
 	page.Add([]byte("RocksDB is an LSM-based key/value storage engine"))
 	page.Add([]byte("PebbleDB is an LSM-based key/value storage engine"))
-	page.Finish()
+	page.finish()
 
 	decodedPage := &Page{}
 	decodedPage.DecodeFrom(page.buffer)
@@ -134,7 +134,7 @@ func TestDecodeAPageWithFewRecords(t *testing.T) {
 	for record := 1; record <= records; record++ {
 		page.Add([]byte(fmt.Sprintf("Record %d", record)))
 	}
-	page.Finish()
+	page.finish()
 
 	decodedPage := &Page{}
 	decodedPage.DecodeFrom(page.buffer)

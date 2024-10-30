@@ -79,7 +79,7 @@ func (logManager *BlockLogManager) appendNewBlock() (file.BlockId, error) {
 }
 
 func (logManager *BlockLogManager) forceFlush() error {
-	logManager.logPage.Finish()
+	logManager.logPage.finish()
 	if err := logManager.fileManager.Write(logManager.currentBlockId, logManager.logPage); err != nil {
 		return err
 	}

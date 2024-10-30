@@ -135,7 +135,7 @@ func (page *Page) MutateString(index int, value string) {
 	})
 }
 
-func (page *Page) Finish() {
+func (page *Page) finish() {
 	resultingBuffer := page.buffer
 
 	encodedStartingOffsets := page.startingOffsets.Encode()

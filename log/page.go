@@ -47,7 +47,7 @@ func (page *Page) Add(buffer []byte) bool {
 	return false
 }
 
-func (page *Page) Finish() {
+func (page *Page) finish() {
 	resultingBuffer := page.buffer
 
 	encodedStartingOffsets := page.startingOffsets.Encode()

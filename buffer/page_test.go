@@ -10,7 +10,7 @@ const blockSize = 4096
 func TestCreateAPageWithASingleField(t *testing.T) {
 	page := NewPage(blockSize)
 	page.AddUint8(10)
-	page.Finish()
+	page.finish()
 
 	assert.Equal(t, uint8(10), page.GetUint8(0))
 }
@@ -21,7 +21,7 @@ func TestCreateAPageWithFewFields(t *testing.T) {
 	page.AddUint8(8)
 	page.AddUint32(32)
 	page.AddUint16(100)
-	page.Finish()
+	page.finish()
 
 	assert.Equal(t, uint16(16), page.GetUint16(0))
 	assert.Equal(t, uint8(8), page.GetUint8(1))
@@ -33,7 +33,7 @@ func TestCreateAPageWithByteSliceAndString(t *testing.T) {
 	page := NewPage(blockSize)
 	page.AddBytes([]byte("RocksDB is an LSM-based key/value storage engine"))
 	page.AddString("PebbleDB is an LSM-based key/value storage engine")
-	page.Finish()
+	page.finish()
 
 	assert.Equal(t, []byte("RocksDB is an LSM-based key/value storage engine"), page.GetBytes(0))
 	assert.Equal(t, "PebbleDB is an LSM-based key/value storage engine", page.GetString(1))
@@ -42,7 +42,7 @@ func TestCreateAPageWithByteSliceAndString(t *testing.T) {
 func TestAttemptToGetTheValueAtAnIndexGreaterThanTheNumberOfAvailableFields(t *testing.T) {
 	page := NewPage(blockSize)
 	page.AddString("PebbleDB is an LSM-based key/value storage engine")
-	page.Finish()
+	page.finish()
 
 	decodedPage := &Page{}
 	decodedPage.DecodeFrom(page.buffer)
@@ -55,7 +55,7 @@ func TestAttemptToGetTheValueAtAnIndexGreaterThanTheNumberOfAvailableFields(t *t
 func TestAttemptToGetTheValueWithMismatchedTypeDescription(t *testing.T) {
 	page := NewPage(blockSize)
 	page.AddString("PebbleDB is an LSM-based key/value storage engine")
-	page.Finish()
+	page.finish()
 
 	decodedPage := &Page{}
 	decodedPage.DecodeFrom(page.buffer)
@@ -68,7 +68,7 @@ func TestAttemptToGetTheValueWithMismatchedTypeDescription(t *testing.T) {
 func TestDecodeAPageWithASingleField(t *testing.T) {
 	page := NewPage(blockSize)
 	page.AddString("PebbleDB is an LSM-based key/value storage engine")
-	page.Finish()
+	page.finish()
 
 	decodedPage := &Page{}
 	decodedPage.DecodeFrom(page.buffer)
@@ -82,7 +82,7 @@ func TestDecodeAPageWithFewFields(t *testing.T) {
 	page.AddUint16(16)
 	page.AddUint16(160)
 	page.AddUint64(64)
-	page.Finish()
+	page.finish()
 
 	decodedPage := &Page{}
 	decodedPage.DecodeFrom(page.buffer)
@@ -99,7 +99,7 @@ func TestAddFewFieldsInPageDecodeThePageAndAddFieldsInTheDecodedPageToSimulateLo
 	page.AddUint32(32)
 	page.AddUint16(16)
 	page.AddUint64(64)
-	page.Finish()
+	page.finish()
 
 	decodedPage := &Page{}
 	decodedPage.DecodeFrom(page.buffer)
@@ -166,7 +166,7 @@ func TestAddFewFieldsInPageDecodeThePageAndMutateFieldsInTheDecodedPageToSimulat
 	page.AddUint32(32)
 	page.AddUint16(16)
 	page.AddUint64(64)
-	page.Finish()
+	page.finish()
 
 	decodedPage := &Page{}
 	decodedPage.DecodeFrom(page.buffer)
