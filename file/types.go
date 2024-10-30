@@ -72,3 +72,11 @@ func (types *Types) Encode() []byte {
 func (types *Types) GetTypeAt(index int) Type {
 	return types.description[index]
 }
+
+func (types *Types) SizeUsedInBytes() int {
+	return ReservedSizeForAType * len(types.description)
+}
+
+func SizeUsedInBytes(numberOfDescriptions uint16) int {
+	return ReservedSizeForAType * int(numberOfDescriptions)
+}

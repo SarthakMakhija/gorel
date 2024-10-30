@@ -32,17 +32,18 @@ func (page *Page) DecodeFrom(buffer []byte) {
 	numberOfOffsets := binary.LittleEndian.Uint16(buffer[len(buffer)-reservedSizeForNumberOfOffsets:])
 	numberOfTypeDescriptions := numberOfOffsets
 
-	offsetAtWhichEncodedStartingOffsetsAreWritten := binary.LittleEndian.Uint16(buffer[len(buffer)-reservedSizeForNumberOfOffsets-reservedSizeForNumberOfOffsets:])
+	offsetAtWhichEncodedStartingOffsetsAreWritten := len(buffer) - reservedSizeForNumberOfOffsets - file.SizeUsedInBytesFor(numberOfOffsets)
 	startingOffsets := file.DecodeStartingOffsetsFrom(
-		buffer[offsetAtWhichEncodedStartingOffsetsAreWritten : int(offsetAtWhichEncodedStartingOffsetsAreWritten)+reservedSizeForNumberOfOffsets*int(numberOfOffsets)],
+		buffer[offsetAtWhichEncodedStartingOffsetsAreWritten : offsetAtWhichEncodedStartingOffsetsAreWritten+reservedSizeForNumberOfOffsets*int(numberOfOffsets)],
 	)
 
-	offsetAtWhichEncodedTypeDescriptionsAreWritten := int(offsetAtWhichEncodedStartingOffsetsAreWritten) + reservedSizeForNumberOfOffsets*int(numberOfOffsets)
+	offsetAtWhichEncodedTypeDescriptionsAreWritten := offsetAtWhichEncodedStartingOffsetsAreWritten - file.SizeUsedInBytes(numberOfTypeDescriptions)
 	types := file.DecodeTypesFrom(buffer[offsetAtWhichEncodedTypeDescriptionsAreWritten : offsetAtWhichEncodedTypeDescriptionsAreWritten+file.ReservedSizeForAType*int(numberOfTypeDescriptions)])
 
 	page.buffer = buffer
 	page.startingOffsets = startingOffsets
 	page.types = types
+	//TODO: populate current write offset
 }
 
 // AddUint8 TODO: validate capacity before adding, for all the methods.
@@ -107,14 +108,13 @@ func (page *Page) Finish() {
 	encodedStartingOffsets := page.startingOffsets.Encode()
 	encodedTypeDescription := page.types.Encode()
 
-	offsetToWriteTheEncodedStartingOffsets := page.currentWriteOffset
+	offsetToWriteTheEncodedStartingOffsets := len(resultingBuffer) - reservedSizeForNumberOfOffsets - page.startingOffsets.SizeUsedInBytes()
 	copy(resultingBuffer[offsetToWriteTheEncodedStartingOffsets:], encodedStartingOffsets)
 
-	offsetToWriteTypeDescription := offsetToWriteTheEncodedStartingOffsets + uint(len(encodedStartingOffsets))
+	offsetToWriteTypeDescription := offsetToWriteTheEncodedStartingOffsets - page.types.SizeUsedInBytes()
 	copy(resultingBuffer[offsetToWriteTypeDescription:], encodedTypeDescription)
 
 	binary.LittleEndian.PutUint16(resultingBuffer[len(resultingBuffer)-reservedSizeForNumberOfOffsets:], uint16(page.startingOffsets.Length()))
-	binary.LittleEndian.PutUint16(resultingBuffer[len(resultingBuffer)-reservedSizeForNumberOfOffsets-reservedSizeForNumberOfOffsets:], uint16(offsetToWriteTheEncodedStartingOffsets))
 }
 
 func (page *Page) Content() []byte {
