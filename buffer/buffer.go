@@ -30,10 +30,6 @@ func (buffer *Buffer) Page() *Page {
 	return buffer.page
 }
 
-func (buffer *Buffer) IsPinned() bool {
-	return buffer.pins > 0
-}
-
 func (buffer *Buffer) SetModified(transactionNumber int, logSequenceNumber uint) {
 	buffer.transactionNumber = transactionNumber
 	if logSequenceNumber >= 0 {
@@ -53,6 +49,18 @@ func (buffer *Buffer) AssignToBlock(blockId file.BlockId) error {
 	return nil
 }
 
+func (buffer *Buffer) pin() {
+	buffer.pins += 1
+}
+
+func (buffer *Buffer) unpin() {
+	buffer.pins -= 1
+}
+
+func (buffer *Buffer) isPinned() bool {
+	return buffer.pins > 0
+}
+
 func (buffer *Buffer) flush() error {
 	if buffer.transactionNumber >= 0 {
 		if err := buffer.logManager.Flush(buffer.logSequenceNumber); err != nil {
@@ -65,12 +73,4 @@ func (buffer *Buffer) flush() error {
 		buffer.transactionNumber = -1
 	}
 	return nil
-}
-
-func (buffer *Buffer) pin() {
-	buffer.pins += 1
-}
-
-func (buffer *Buffer) unpin() {
-	buffer.pins -= 1
 }

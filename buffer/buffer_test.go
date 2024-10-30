@@ -26,7 +26,7 @@ func TestBufferIsPinned(t *testing.T) {
 	buffer := NewBuffer(fileManager, logManager)
 	buffer.pin()
 
-	assert.True(t, buffer.IsPinned())
+	assert.True(t, buffer.isPinned())
 }
 
 func TestBufferIsNotPinned(t *testing.T) {
@@ -44,7 +44,7 @@ func TestBufferIsNotPinned(t *testing.T) {
 	assert.Nil(t, err)
 
 	buffer := NewBuffer(fileManager, logManager)
-	assert.False(t, buffer.IsPinned())
+	assert.False(t, buffer.isPinned())
 }
 
 func TestTotalPinsForABuffer(t *testing.T) {
