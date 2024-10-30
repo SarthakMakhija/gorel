@@ -7,10 +7,7 @@ import (
 	"unsafe"
 )
 
-var (
-	reservedSizeForNumberOfOffsets = int(unsafe.Sizeof(uint16(0)))
-	uint8Size                      = uint(unsafe.Sizeof(uint8(0)))
-)
+var reservedSizeForNumberOfOffsets = int(unsafe.Sizeof(uint16(0)))
 
 type Page struct {
 	buffer             []byte
@@ -43,15 +40,14 @@ func (page *Page) DecodeFrom(buffer []byte) {
 	page.buffer = buffer
 	page.startingOffsets = startingOffsets
 	page.types = types
-	//TODO: populate current write offset
+	page.updateCurrentWriteOffset()
 }
 
 // AddUint8 TODO: validate capacity before adding, for all the methods.
 func (page *Page) AddUint8(value uint8) {
 	page.addField(
 		func() gorel.BytesNeededForEncoding {
-			page.buffer[page.currentWriteOffset] = value
-			return uint8Size
+			return gorel.EncodeUint8(value, page.buffer, page.currentWriteOffset)
 		},
 		file.TypeUint8,
 	)
@@ -124,7 +120,8 @@ func (page *Page) Content() []byte {
 func (page *Page) GetUint8(index int) uint8 {
 	page.assertIndexInBounds(index)
 	page.assertTypeDescriptionMatch(file.TypeUint8, page.types.GetTypeAt(index))
-	return page.buffer[page.startingOffsets.OffsetAtIndex(index)]
+	decoded, _ := gorel.DecodeUint8(page.buffer, page.startingOffsets.OffsetAtIndex(index))
+	return decoded
 }
 
 func (page *Page) GetUint16(index int) uint16 {
@@ -171,7 +168,7 @@ func (page *Page) assertIndexInBounds(index int) {
 	)
 }
 
-func (page *Page) assertTypeDescriptionMatch(expectedTypeDescription, actualTypeDescription file.Type) {
+func (page *Page) assertTypeDescriptionMatch(expectedTypeDescription, actualTypeDescription file.TypeDescription) {
 	gorel.Assert(
 		expectedTypeDescription.Equals(actualTypeDescription),
 		"type description mismatch, expected type %s actual type %s",
@@ -180,7 +177,7 @@ func (page *Page) assertTypeDescriptionMatch(expectedTypeDescription, actualType
 	)
 }
 
-func (page *Page) addField(encodeFn func() gorel.BytesNeededForEncoding, typeDescription file.Type) {
+func (page *Page) addField(encodeFn func() gorel.BytesNeededForEncoding, typeDescription file.TypeDescription) {
 	bytesNeededForEncoding := encodeFn()
 	page.startingOffsets.Append(uint16(page.currentWriteOffset))
 	page.types.AddTypeDescription(typeDescription)
@@ -189,4 +186,10 @@ func (page *Page) addField(encodeFn func() gorel.BytesNeededForEncoding, typeDes
 
 func (page *Page) moveCurrentWriteOffsetBy(offset uint) {
 	page.currentWriteOffset += offset
+}
+
+func (page *Page) updateCurrentWriteOffset() {
+	lastTypeDescription := page.types.GetTypeAt(page.types.Length() - 1)
+	endOffset := lastTypeDescription.EndOffsetPostDecode(page.buffer, page.startingOffsets.OffsetAtIndex(page.startingOffsets.Length()-1))
+	page.currentWriteOffset = uint(endOffset)
 }

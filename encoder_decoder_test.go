@@ -17,6 +17,17 @@ func TestEncodeAndDecodeAByteSlice(t *testing.T) {
 	assert.Equal(t, "LSM stands for log-structured merge tree", string(sourceBytes))
 }
 
+func TestEncodeAndDecodeAnUint8(t *testing.T) {
+	value := uint8(100)
+	destination := make([]byte, 2)
+
+	EncodeUint8(value, destination, 0)
+
+	decoded, endOffset := DecodeUint8(destination, 0)
+	assert.Equal(t, uint8(100), decoded)
+	assert.Equal(t, EndOffset(uint8Size), endOffset)
+}
+
 func TestEncodeAndDecodeAnUint16(t *testing.T) {
 	value := uint16(100)
 	destination := make([]byte, 2)
