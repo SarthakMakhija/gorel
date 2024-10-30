@@ -190,11 +190,6 @@ func (page *Page) GetBytes(index int) []byte {
 	return decoded
 }
 
-func (page *Page) assertFieldAt(index int, typeDescription file.TypeDescription) {
-	page.assertIndexInBounds(index)
-	page.assertTypeDescriptionMatch(typeDescription, page.types.GetTypeAt(index))
-}
-
 func (page *Page) assertIndexInBounds(index int) {
 	gorel.Assert(
 		index < page.startingOffsets.Length(),
@@ -223,6 +218,11 @@ func (page *Page) addField(encodeFn func() gorel.BytesNeededForEncoding, typeDes
 func (page *Page) mutateField(index int, typeDescription file.TypeDescription, encodeFn func(destinationOffset uint) gorel.BytesNeededForEncoding) {
 	page.assertFieldAt(index, typeDescription)
 	encodeFn(uint(page.startingOffsets.OffsetAtIndex(index)))
+}
+
+func (page *Page) assertFieldAt(index int, typeDescription file.TypeDescription) {
+	page.assertIndexInBounds(index)
+	page.assertTypeDescriptionMatch(typeDescription, page.types.GetTypeAt(index))
 }
 
 func (page *Page) moveCurrentWriteOffsetBy(offset uint) {
