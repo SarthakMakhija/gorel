@@ -118,51 +118,50 @@ func (page *Page) Content() []byte {
 }
 
 func (page *Page) GetUint8(index int) uint8 {
-	page.assertIndexInBounds(index)
-	page.assertTypeDescriptionMatch(file.TypeUint8, page.types.GetTypeAt(index))
+	page.assertFieldAt(index, file.TypeUint8)
 	decoded, _ := gorel.DecodeUint8(page.buffer, page.startingOffsets.OffsetAtIndex(index))
 	return decoded
 }
 
 func (page *Page) GetUint16(index int) uint16 {
-	page.assertIndexInBounds(index)
-	page.assertTypeDescriptionMatch(file.TypeUint16, page.types.GetTypeAt(index))
+	page.assertFieldAt(index, file.TypeUint16)
 	decoded, _ := gorel.DecodeUint16(page.buffer, page.startingOffsets.OffsetAtIndex(index))
 	return decoded
 }
 
 func (page *Page) GetUint32(index int) uint32 {
-	page.assertIndexInBounds(index)
-	page.assertTypeDescriptionMatch(file.TypeUint32, page.types.GetTypeAt(index))
+	page.assertFieldAt(index, file.TypeUint32)
 	decoded, _ := gorel.DecodeUint32(page.buffer, page.startingOffsets.OffsetAtIndex(index))
 	return decoded
 }
 
 func (page *Page) GetUint64(index int) uint64 {
-	page.assertIndexInBounds(index)
-	page.assertTypeDescriptionMatch(file.TypeUint64, page.types.GetTypeAt(index))
+	page.assertFieldAt(index, file.TypeUint64)
 	decoded, _ := gorel.DecodeUint64(page.buffer, page.startingOffsets.OffsetAtIndex(index))
 	return decoded
 }
 
 func (page *Page) GetString(index int) string {
-	page.assertIndexInBounds(index)
-	page.assertTypeDescriptionMatch(file.TypeString, page.types.GetTypeAt(index))
+	page.assertFieldAt(index, file.TypeString)
 	decoded, _ := gorel.DecodeByteSlice(page.buffer, page.startingOffsets.OffsetAtIndex(index))
 	return string(decoded)
 }
 
 func (page *Page) GetBytes(index int) []byte {
-	page.assertIndexInBounds(index)
-	page.assertTypeDescriptionMatch(file.TypeByteSlice, page.types.GetTypeAt(index))
+	page.assertFieldAt(index, file.TypeByteSlice)
 	decoded, _ := gorel.DecodeByteSlice(page.buffer, page.startingOffsets.OffsetAtIndex(index))
 	return decoded
+}
+
+func (page *Page) assertFieldAt(index int, typeDescription file.TypeDescription) {
+	page.assertIndexInBounds(index)
+	page.assertTypeDescriptionMatch(typeDescription, page.types.GetTypeAt(index))
 }
 
 func (page *Page) assertIndexInBounds(index int) {
 	gorel.Assert(
 		index < page.startingOffsets.Length(),
-		"index out of bounds, index = %d, startingOffsets = %d",
+		"index out of bounds, index = %d, available startingOffsets = %d",
 		index,
 		page.startingOffsets.Length(),
 	)
