@@ -87,6 +87,14 @@ func TestCreateALogPageWithFewRecords(t *testing.T) {
 	assert.False(t, iterator.IsValid())
 }
 
+func TestDecodeAPageWithZeroRecords(t *testing.T) {
+	decodedPage := &Page{}
+	decodedPage.DecodeFrom(make([]byte, blockSize))
+
+	iterator := decodedPage.BackwardIterator()
+	assert.False(t, iterator.IsValid())
+}
+
 func TestDecodeAPageWithASingleRecord(t *testing.T) {
 	page := NewPage(blockSize)
 	page.Add([]byte("RocksDB is an LSM-based key/value storage engine"))

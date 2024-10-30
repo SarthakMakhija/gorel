@@ -36,7 +36,6 @@ func (page *Page) DecodeFrom(buffer []byte) {
 		page.currentWriteOffset = 0
 		return
 	}
-
 	offsetAtWhichEncodedStartingOffsetsAreWritten := len(buffer) - reservedSizeForNumberOfOffsets - file.SizeUsedInBytesFor(numberOfOffsets)
 	startingOffsets := file.DecodeStartingOffsetsFrom(
 		buffer[offsetAtWhichEncodedStartingOffsetsAreWritten : offsetAtWhichEncodedStartingOffsetsAreWritten+reservedSizeForNumberOfOffsets*int(numberOfOffsets)],

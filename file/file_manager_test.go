@@ -60,6 +60,25 @@ func TestWriteAPageUsingBlockFileManager(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestAppendAnEmptyBlock(t *testing.T) {
+	fileManager, err := NewBlockFileManager(".", blockSize)
+	assert.Nil(t, err)
+
+	defer func() {
+		fileManager.Close()
+		_ = os.Remove(t.Name())
+	}()
+
+	fileName := t.Name()
+	blockId, err := fileManager.AppendEmptyBlock(fileName)
+	assert.Nil(t, err)
+
+	page := newTestPage(blockSize)
+	assert.Nil(t, fileManager.ReadInto(blockId, page))
+
+	assert.Equal(t, make([]byte, blockSize), page.buffer)
+}
+
 func TestWriteAPageAtBlockZeroAndThenReadItUsingBlockFileManager(t *testing.T) {
 	fileManager, err := NewBlockFileManager(".", blockSize)
 	assert.Nil(t, err)

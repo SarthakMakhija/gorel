@@ -13,7 +13,6 @@ type Page struct {
 	buffer             []byte
 	startingOffsets    *file.StartingOffsets
 	currentWriteOffset uint
-	blockSize          uint
 }
 
 func NewPage(blockSize uint) *Page {
@@ -21,12 +20,17 @@ func NewPage(blockSize uint) *Page {
 		buffer:             make([]byte, blockSize),
 		startingOffsets:    file.NewStartingOffsets(),
 		currentWriteOffset: 0,
-		blockSize:          blockSize,
 	}
 }
 
 func (page *Page) DecodeFrom(buffer []byte) {
 	numberOfOffsets := binary.LittleEndian.Uint16(buffer[len(buffer)-reservedSizeForNumberOfOffsets:])
+	if numberOfOffsets == 0 {
+		page.buffer = buffer
+		page.startingOffsets = file.NewStartingOffsets()
+		page.currentWriteOffset = 0
+		return
+	}
 	offsetAtWhichEncodedStartingOffsetsAreWritten := len(buffer) - reservedSizeForNumberOfOffsets - file.SizeUsedInBytesFor(numberOfOffsets)
 	startingOffsets := file.DecodeStartingOffsetsFrom(
 		buffer[offsetAtWhichEncodedStartingOffsetsAreWritten : offsetAtWhichEncodedStartingOffsetsAreWritten+file.SizeUsedInBytesFor(numberOfOffsets)],

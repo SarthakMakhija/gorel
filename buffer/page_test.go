@@ -39,6 +39,14 @@ func TestCreateAPageWithByteSliceAndString(t *testing.T) {
 	assert.Equal(t, "PebbleDB is an LSM-based key/value storage engine", page.GetString(1))
 }
 
+func TestDecodeAPageWithZeroFields(t *testing.T) {
+	decodedPage := &Page{}
+	decodedPage.DecodeFrom(make([]byte, blockSize))
+
+	assert.Equal(t, 0, decodedPage.startingOffsets.Length())
+	assert.Equal(t, 0, decodedPage.types.Length())
+}
+
 func TestAttemptToGetTheValueAtAnIndexGreaterThanTheNumberOfAvailableFields(t *testing.T) {
 	page := NewPage(blockSize)
 	page.AddString("PebbleDB is an LSM-based key/value storage engine")
