@@ -120,3 +120,41 @@ func TestAssignBlockToABuffer(t *testing.T) {
 	assert.Equal(t, uint32(32), bufferPage.GetUint32(0))
 	assert.Equal(t, "BoltDB is a B+Tree based storage engine", bufferPage.GetString(1))
 }
+
+func TestFlushABuffer(t *testing.T) {
+	fileManager, err := file.NewBlockFileManager(".", blockSize)
+	assert.Nil(t, err)
+
+	bufferFileName := t.Name()
+	logFileName := fmt.Sprintf("%v_%v", t.Name(), "log")
+
+	defer func() {
+		fileManager.Close()
+		_ = os.Remove(bufferFileName)
+		_ = os.Remove(logFileName)
+	}()
+
+	logManager, err := log.NewBlockLogManager(fileManager, logFileName)
+	assert.Nil(t, err)
+
+	_, err = fileManager.AppendEmptyBlock(bufferFileName)
+	assert.Nil(t, err)
+
+	buffer := NewBuffer(fileManager, logManager)
+	assert.Nil(t, buffer.AssignToBlock(file.NewBlockId(bufferFileName, 0)))
+
+	bufferPage := buffer.page
+	bufferPage.AddUint32(32)
+	bufferPage.AddString("BoltDB is a B+Tree based storage engine")
+
+	anyTransactionNumber := 10
+	anyLogSequenceNumber := uint(10)
+	buffer.SetModified(anyTransactionNumber, anyLogSequenceNumber)
+	assert.Nil(t, buffer.flush())
+
+	assert.Nil(t, buffer.AssignToBlock(file.NewBlockId(bufferFileName, 0)))
+	reAssignedBufferPage := buffer.page
+
+	assert.Equal(t, uint32(32), reAssignedBufferPage.GetUint32(0))
+	assert.Equal(t, "BoltDB is a B+Tree based storage engine", reAssignedBufferPage.GetString(1))
+}

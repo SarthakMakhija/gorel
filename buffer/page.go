@@ -29,6 +29,14 @@ func (page *Page) DecodeFrom(buffer []byte) {
 	numberOfOffsets := binary.LittleEndian.Uint16(buffer[len(buffer)-reservedSizeForNumberOfOffsets:])
 	numberOfTypeDescriptions := numberOfOffsets
 
+	if numberOfOffsets == 0 {
+		page.buffer = buffer
+		page.startingOffsets = file.NewStartingOffsets()
+		page.types = file.NewTypes()
+		page.currentWriteOffset = 0
+		return
+	}
+
 	offsetAtWhichEncodedStartingOffsetsAreWritten := len(buffer) - reservedSizeForNumberOfOffsets - file.SizeUsedInBytesFor(numberOfOffsets)
 	startingOffsets := file.DecodeStartingOffsetsFrom(
 		buffer[offsetAtWhichEncodedStartingOffsetsAreWritten : offsetAtWhichEncodedStartingOffsetsAreWritten+reservedSizeForNumberOfOffsets*int(numberOfOffsets)],

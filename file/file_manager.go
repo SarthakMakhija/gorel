@@ -67,7 +67,7 @@ func (fileManager *BlockFileManager) AppendEmptyBlock(fileName string) (BlockId,
 	if _, err = file.Seek(blockId.offset(fileManager.blockSize), 0); err != nil {
 		return BlockId{}, err
 	}
-	if _, err = file.Write(make([]byte, 0)); err != nil {
+	if _, err = file.Write(make([]byte, fileManager.blockSize)); err != nil {
 		return BlockId{}, err
 	}
 	return blockId, nil

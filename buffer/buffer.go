@@ -17,10 +17,11 @@ type Buffer struct {
 
 func NewBuffer(fileManager *file.BlockFileManager, logManager *log.BlockLogManager) *Buffer {
 	return &Buffer{
-		fileManager: fileManager,
-		logManager:  logManager,
-		page:        NewPage(fileManager.BlockSize()),
-		pins:        0,
+		fileManager:       fileManager,
+		logManager:        logManager,
+		page:              NewPage(fileManager.BlockSize()),
+		pins:              0,
+		transactionNumber: -1,
 	}
 }
 
@@ -40,7 +41,9 @@ func (buffer *Buffer) SetModified(transactionNumber int, logSequenceNumber uint)
 }
 
 func (buffer *Buffer) AssignToBlock(blockId file.BlockId) error {
-	buffer.flush()
+	if err := buffer.flush(); err != nil {
+		return err
+	}
 	if err := buffer.fileManager.ReadInto(blockId, buffer.page); err != nil {
 		return err
 	}
@@ -49,17 +52,18 @@ func (buffer *Buffer) AssignToBlock(blockId file.BlockId) error {
 	return nil
 }
 
-func (buffer *Buffer) flush() {
+func (buffer *Buffer) flush() error {
 	if buffer.transactionNumber >= 0 {
 		if err := buffer.logManager.Flush(buffer.logSequenceNumber); err != nil {
-			return
+			return err
 		}
 		buffer.page.finish()
 		if err := buffer.fileManager.Write(buffer.blockId, buffer.page); err != nil {
-			return
+			return err
 		}
 		buffer.transactionNumber = -1
 	}
+	return nil
 }
 
 func (buffer *Buffer) pin() {
