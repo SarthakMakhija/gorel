@@ -111,3 +111,71 @@ func TestAddFewFieldsInPageDecodeThePageAndAddFieldsInTheDecodedPageToSimulateLo
 	assert.Equal(t, uint64(64), decodedPage.GetUint64(3))
 	assert.Equal(t, "RocksDB is an LSM-based key/value storage engine", decodedPage.GetString(4))
 }
+
+func TestMutateAnUint8InPage(t *testing.T) {
+	page := NewPage(blockSize)
+	page.AddUint8(10)
+	page.MutateUint8(0, 20)
+
+	assert.Equal(t, uint8(20), page.GetUint8(0))
+}
+
+func TestMutateAnUint16InPage(t *testing.T) {
+	page := NewPage(blockSize)
+	page.AddUint16(16)
+	page.MutateUint16(0, 20)
+
+	assert.Equal(t, uint16(20), page.GetUint16(0))
+}
+
+func TestMutateAnUint32InPage(t *testing.T) {
+	page := NewPage(blockSize)
+	page.AddUint32(32)
+	page.MutateUint32(0, 64)
+
+	assert.Equal(t, uint32(64), page.GetUint32(0))
+}
+
+func TestMutateAnUint64InPage(t *testing.T) {
+	page := NewPage(blockSize)
+	page.AddUint64(64)
+	page.MutateUint64(0, 640)
+
+	assert.Equal(t, uint64(640), page.GetUint64(0))
+}
+
+func TestMutateAByteSliceInPage(t *testing.T) {
+	page := NewPage(blockSize)
+	page.AddBytes([]byte("Bolt-DB"))
+	page.MutateBytes(0, []byte("RocksDB"))
+
+	assert.Equal(t, []byte("RocksDB"), page.GetBytes(0))
+}
+
+func TestMutateAStringInPage(t *testing.T) {
+	page := NewPage(blockSize)
+	page.AddString("Bolt-DB")
+	page.MutateString(0, "RocksDB")
+
+	assert.Equal(t, "RocksDB", page.GetString(0))
+}
+
+func TestAddFewFieldsInPageDecodeThePageAndMutateFieldsInTheDecodedPageToSimulateLoadingPageFromDiskAndChangingIt(t *testing.T) {
+	page := NewPage(blockSize)
+	page.AddString("PebbleDB is an LSM-based key/value storage engine")
+	page.AddUint32(32)
+	page.AddUint16(16)
+	page.AddUint64(64)
+	page.Finish()
+
+	decodedPage := &Page{}
+	decodedPage.DecodeFrom(page.buffer)
+	decodedPage.MutateString(0, "Rocks-DB is an LSM-based key/value storage engine")
+	decodedPage.MutateUint16(2, 160)
+	decodedPage.MutateUint64(3, 640)
+
+	assert.Equal(t, "Rocks-DB is an LSM-based key/value storage engine", decodedPage.GetString(0))
+	assert.Equal(t, uint32(32), decodedPage.GetUint32(1))
+	assert.Equal(t, uint16(160), decodedPage.GetUint16(2))
+	assert.Equal(t, uint64(640), decodedPage.GetUint64(3))
+}

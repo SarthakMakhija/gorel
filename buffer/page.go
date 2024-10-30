@@ -53,6 +53,12 @@ func (page *Page) AddUint8(value uint8) {
 	)
 }
 
+func (page *Page) MutateUint8(index int, value uint8) {
+	page.mutateField(index, file.TypeUint8, func(destinationOffset uint) gorel.BytesNeededForEncoding {
+		return gorel.EncodeUint8(value, page.buffer, destinationOffset)
+	})
+}
+
 func (page *Page) AddUint16(value uint16) {
 	page.addField(
 		func() gorel.BytesNeededForEncoding {
@@ -60,6 +66,12 @@ func (page *Page) AddUint16(value uint16) {
 		},
 		file.TypeUint16,
 	)
+}
+
+func (page *Page) MutateUint16(index int, value uint16) {
+	page.mutateField(index, file.TypeUint16, func(destinationOffset uint) gorel.BytesNeededForEncoding {
+		return gorel.EncodeUint16(value, page.buffer, destinationOffset)
+	})
 }
 
 func (page *Page) AddUint32(value uint32) {
@@ -71,6 +83,12 @@ func (page *Page) AddUint32(value uint32) {
 	)
 }
 
+func (page *Page) MutateUint32(index int, value uint32) {
+	page.mutateField(index, file.TypeUint32, func(destinationOffset uint) gorel.BytesNeededForEncoding {
+		return gorel.EncodeUint32(value, page.buffer, destinationOffset)
+	})
+}
+
 func (page *Page) AddUint64(value uint64) {
 	page.addField(
 		func() gorel.BytesNeededForEncoding {
@@ -78,6 +96,12 @@ func (page *Page) AddUint64(value uint64) {
 		},
 		file.TypeUint64,
 	)
+}
+
+func (page *Page) MutateUint64(index int, value uint64) {
+	page.mutateField(index, file.TypeUint64, func(destinationOffset uint) gorel.BytesNeededForEncoding {
+		return gorel.EncodeUint64(value, page.buffer, destinationOffset)
+	})
 }
 
 func (page *Page) AddBytes(buffer []byte) {
@@ -89,6 +113,13 @@ func (page *Page) AddBytes(buffer []byte) {
 	)
 }
 
+// MutateBytes TODO: what if the value does not fit?
+func (page *Page) MutateBytes(index int, value []byte) {
+	page.mutateField(index, file.TypeByteSlice, func(destinationOffset uint) gorel.BytesNeededForEncoding {
+		return gorel.EncodeByteSlice(value, page.buffer, destinationOffset)
+	})
+}
+
 func (page *Page) AddString(str string) {
 	page.addField(
 		func() gorel.BytesNeededForEncoding {
@@ -96,6 +127,12 @@ func (page *Page) AddString(str string) {
 		},
 		file.TypeString,
 	)
+}
+
+func (page *Page) MutateString(index int, value string) {
+	page.mutateField(index, file.TypeString, func(destinationOffset uint) gorel.BytesNeededForEncoding {
+		return gorel.EncodeByteSlice([]byte(value), page.buffer, destinationOffset)
+	})
 }
 
 func (page *Page) Finish() {
@@ -181,6 +218,11 @@ func (page *Page) addField(encodeFn func() gorel.BytesNeededForEncoding, typeDes
 	page.startingOffsets.Append(uint16(page.currentWriteOffset))
 	page.types.AddTypeDescription(typeDescription)
 	page.moveCurrentWriteOffsetBy(bytesNeededForEncoding)
+}
+
+func (page *Page) mutateField(index int, typeDescription file.TypeDescription, encodeFn func(destinationOffset uint) gorel.BytesNeededForEncoding) {
+	page.assertFieldAt(index, typeDescription)
+	encodeFn(uint(page.startingOffsets.OffsetAtIndex(index)))
 }
 
 func (page *Page) moveCurrentWriteOffsetBy(offset uint) {
