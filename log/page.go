@@ -69,7 +69,8 @@ func (page *Page) BackwardIterator() *BackwardRecordIterator {
 }
 
 func (page *Page) getBytesAt(offset uint16) []byte {
-	return gorel.DecodeByteSlice(page.buffer, offset)
+	decoded, _ := gorel.DecodeByteSlice(page.buffer, offset)
+	return decoded
 }
 
 func (page *Page) moveCurrentWriteOffsetBy(offset uint) {
@@ -89,7 +90,7 @@ func (page *Page) hasCapacityFor(buffer []byte) bool {
 
 func (page *Page) updateCurrentWriteOffset() {
 	lastStartingOffset := page.startingOffsets.OffsetAtIndex(page.startingOffsets.Length() - 1)
-	_, endOffset := gorel.DecodeByteSliceWithEndOffset(page.buffer, lastStartingOffset)
+	_, endOffset := gorel.DecodeByteSlice(page.buffer, lastStartingOffset)
 
 	page.currentWriteOffset = uint(endOffset)
 }

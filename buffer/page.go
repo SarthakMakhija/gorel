@@ -130,31 +130,36 @@ func (page *Page) GetUint8(index int) uint8 {
 func (page *Page) GetUint16(index int) uint16 {
 	page.assertIndexInBounds(index)
 	page.assertTypeDescriptionMatch(file.TypeUint16, page.types.GetTypeAt(index))
-	return gorel.DecodeUint16(page.buffer, page.startingOffsets.OffsetAtIndex(index))
+	decoded, _ := gorel.DecodeUint16(page.buffer, page.startingOffsets.OffsetAtIndex(index))
+	return decoded
 }
 
 func (page *Page) GetUint32(index int) uint32 {
 	page.assertIndexInBounds(index)
 	page.assertTypeDescriptionMatch(file.TypeUint32, page.types.GetTypeAt(index))
-	return gorel.DecodeUint32(page.buffer, page.startingOffsets.OffsetAtIndex(index))
+	decoded, _ := gorel.DecodeUint32(page.buffer, page.startingOffsets.OffsetAtIndex(index))
+	return decoded
 }
 
 func (page *Page) GetUint64(index int) uint64 {
 	page.assertIndexInBounds(index)
 	page.assertTypeDescriptionMatch(file.TypeUint64, page.types.GetTypeAt(index))
-	return gorel.DecodeUint64(page.buffer, page.startingOffsets.OffsetAtIndex(index))
+	decoded, _ := gorel.DecodeUint64(page.buffer, page.startingOffsets.OffsetAtIndex(index))
+	return decoded
 }
 
 func (page *Page) GetString(index int) string {
 	page.assertIndexInBounds(index)
 	page.assertTypeDescriptionMatch(file.TypeString, page.types.GetTypeAt(index))
-	return string(gorel.DecodeByteSlice(page.buffer, page.startingOffsets.OffsetAtIndex(index)))
+	decoded, _ := gorel.DecodeByteSlice(page.buffer, page.startingOffsets.OffsetAtIndex(index))
+	return string(decoded)
 }
 
 func (page *Page) GetBytes(index int) []byte {
 	page.assertIndexInBounds(index)
 	page.assertTypeDescriptionMatch(file.TypeByteSlice, page.types.GetTypeAt(index))
-	return gorel.DecodeByteSlice(page.buffer, page.startingOffsets.OffsetAtIndex(index))
+	decoded, _ := gorel.DecodeByteSlice(page.buffer, page.startingOffsets.OffsetAtIndex(index))
+	return decoded
 }
 
 func (page *Page) assertIndexInBounds(index int) {

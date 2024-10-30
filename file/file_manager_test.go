@@ -31,7 +31,8 @@ func (page *testPage) add(buffer []byte) {
 }
 
 func (page *testPage) getBytes(offset uint16) []byte {
-	return gorel.DecodeByteSlice(page.buffer, offset)
+	decoded, _ := gorel.DecodeByteSlice(page.buffer, offset)
+	return decoded
 }
 
 func (page *testPage) Content() []byte {
