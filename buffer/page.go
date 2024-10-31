@@ -9,6 +9,7 @@ import (
 
 var reservedSizeForNumberOfOffsets = int(unsafe.Sizeof(uint16(0)))
 
+// Page TODO: Deletion of value(s) in page? handling holes in page?
 type Page struct {
 	buffer             []byte
 	startingOffsets    *file.StartingOffsets
