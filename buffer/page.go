@@ -13,7 +13,7 @@ var reservedSizeForNumberOfOffsets = int(unsafe.Sizeof(uint16(0)))
 type Page struct {
 	buffer             []byte
 	startingOffsets    *file.StartingOffsets
-	types              *file.Types
+	types              *Types
 	currentWriteOffset uint
 }
 
@@ -21,7 +21,7 @@ func NewPage(blockSize uint) *Page {
 	return &Page{
 		buffer:             make([]byte, blockSize),
 		startingOffsets:    file.NewStartingOffsets(),
-		types:              file.NewTypes(),
+		types:              NewTypes(),
 		currentWriteOffset: 0,
 	}
 }
@@ -33,7 +33,7 @@ func (page *Page) DecodeFrom(buffer []byte) {
 	if numberOfOffsets == 0 {
 		page.buffer = buffer
 		page.startingOffsets = file.NewStartingOffsets()
-		page.types = file.NewTypes()
+		page.types = NewTypes()
 		page.currentWriteOffset = 0
 		return
 	}
@@ -42,8 +42,8 @@ func (page *Page) DecodeFrom(buffer []byte) {
 		buffer[offsetAtWhichEncodedStartingOffsetsAreWritten : offsetAtWhichEncodedStartingOffsetsAreWritten+reservedSizeForNumberOfOffsets*int(numberOfOffsets)],
 	)
 
-	offsetAtWhichEncodedTypeDescriptionsAreWritten := offsetAtWhichEncodedStartingOffsetsAreWritten - file.SizeUsedInBytes(numberOfTypeDescriptions)
-	types := file.DecodeTypesFrom(buffer[offsetAtWhichEncodedTypeDescriptionsAreWritten : offsetAtWhichEncodedTypeDescriptionsAreWritten+file.ReservedSizeForAType*int(numberOfTypeDescriptions)])
+	offsetAtWhichEncodedTypeDescriptionsAreWritten := offsetAtWhichEncodedStartingOffsetsAreWritten - SizeUsedInBytes(numberOfTypeDescriptions)
+	types := DecodeTypesFrom(buffer[offsetAtWhichEncodedTypeDescriptionsAreWritten : offsetAtWhichEncodedTypeDescriptionsAreWritten+ReservedSizeForAType*int(numberOfTypeDescriptions)])
 
 	page.buffer = buffer
 	page.startingOffsets = startingOffsets
@@ -57,12 +57,12 @@ func (page *Page) AddUint8(value uint8) {
 		func() gorel.BytesNeededForEncoding {
 			return gorel.EncodeUint8(value, page.buffer, page.currentWriteOffset)
 		},
-		file.TypeUint8,
+		TypeUint8,
 	)
 }
 
 func (page *Page) MutateUint8(index int, value uint8) {
-	page.mutateField(index, file.TypeUint8, func(destinationOffset uint) gorel.BytesNeededForEncoding {
+	page.mutateField(index, TypeUint8, func(destinationOffset uint) gorel.BytesNeededForEncoding {
 		return gorel.EncodeUint8(value, page.buffer, destinationOffset)
 	})
 }
@@ -72,12 +72,12 @@ func (page *Page) AddUint16(value uint16) {
 		func() gorel.BytesNeededForEncoding {
 			return gorel.EncodeUint16(value, page.buffer, page.currentWriteOffset)
 		},
-		file.TypeUint16,
+		TypeUint16,
 	)
 }
 
 func (page *Page) MutateUint16(index int, value uint16) {
-	page.mutateField(index, file.TypeUint16, func(destinationOffset uint) gorel.BytesNeededForEncoding {
+	page.mutateField(index, TypeUint16, func(destinationOffset uint) gorel.BytesNeededForEncoding {
 		return gorel.EncodeUint16(value, page.buffer, destinationOffset)
 	})
 }
@@ -87,12 +87,12 @@ func (page *Page) AddUint32(value uint32) {
 		func() gorel.BytesNeededForEncoding {
 			return gorel.EncodeUint32(value, page.buffer, page.currentWriteOffset)
 		},
-		file.TypeUint32,
+		TypeUint32,
 	)
 }
 
 func (page *Page) MutateUint32(index int, value uint32) {
-	page.mutateField(index, file.TypeUint32, func(destinationOffset uint) gorel.BytesNeededForEncoding {
+	page.mutateField(index, TypeUint32, func(destinationOffset uint) gorel.BytesNeededForEncoding {
 		return gorel.EncodeUint32(value, page.buffer, destinationOffset)
 	})
 }
@@ -102,12 +102,12 @@ func (page *Page) AddUint64(value uint64) {
 		func() gorel.BytesNeededForEncoding {
 			return gorel.EncodeUint64(value, page.buffer, page.currentWriteOffset)
 		},
-		file.TypeUint64,
+		TypeUint64,
 	)
 }
 
 func (page *Page) MutateUint64(index int, value uint64) {
-	page.mutateField(index, file.TypeUint64, func(destinationOffset uint) gorel.BytesNeededForEncoding {
+	page.mutateField(index, TypeUint64, func(destinationOffset uint) gorel.BytesNeededForEncoding {
 		return gorel.EncodeUint64(value, page.buffer, destinationOffset)
 	})
 }
@@ -117,13 +117,13 @@ func (page *Page) AddBytes(buffer []byte) {
 		func() gorel.BytesNeededForEncoding {
 			return gorel.EncodeByteSlice(buffer, page.buffer, page.currentWriteOffset)
 		},
-		file.TypeByteSlice,
+		TypeByteSlice,
 	)
 }
 
 // MutateBytes TODO: what if the value does not fit?
 func (page *Page) MutateBytes(index int, value []byte) {
-	page.mutateField(index, file.TypeByteSlice, func(destinationOffset uint) gorel.BytesNeededForEncoding {
+	page.mutateField(index, TypeByteSlice, func(destinationOffset uint) gorel.BytesNeededForEncoding {
 		return gorel.EncodeByteSlice(value, page.buffer, destinationOffset)
 	})
 }
@@ -133,12 +133,12 @@ func (page *Page) AddString(str string) {
 		func() gorel.BytesNeededForEncoding {
 			return gorel.EncodeByteSlice([]byte(str), page.buffer, page.currentWriteOffset)
 		},
-		file.TypeString,
+		TypeString,
 	)
 }
 
 func (page *Page) MutateString(index int, value string) {
-	page.mutateField(index, file.TypeString, func(destinationOffset uint) gorel.BytesNeededForEncoding {
+	page.mutateField(index, TypeString, func(destinationOffset uint) gorel.BytesNeededForEncoding {
 		return gorel.EncodeByteSlice([]byte(value), page.buffer, destinationOffset)
 	})
 }
@@ -163,37 +163,37 @@ func (page *Page) Content() []byte {
 }
 
 func (page *Page) GetUint8(index int) uint8 {
-	page.assertFieldAt(index, file.TypeUint8)
+	page.assertFieldAt(index, TypeUint8)
 	decoded, _ := gorel.DecodeUint8(page.buffer, page.startingOffsets.OffsetAtIndex(index))
 	return decoded
 }
 
 func (page *Page) GetUint16(index int) uint16 {
-	page.assertFieldAt(index, file.TypeUint16)
+	page.assertFieldAt(index, TypeUint16)
 	decoded, _ := gorel.DecodeUint16(page.buffer, page.startingOffsets.OffsetAtIndex(index))
 	return decoded
 }
 
 func (page *Page) GetUint32(index int) uint32 {
-	page.assertFieldAt(index, file.TypeUint32)
+	page.assertFieldAt(index, TypeUint32)
 	decoded, _ := gorel.DecodeUint32(page.buffer, page.startingOffsets.OffsetAtIndex(index))
 	return decoded
 }
 
 func (page *Page) GetUint64(index int) uint64 {
-	page.assertFieldAt(index, file.TypeUint64)
+	page.assertFieldAt(index, TypeUint64)
 	decoded, _ := gorel.DecodeUint64(page.buffer, page.startingOffsets.OffsetAtIndex(index))
 	return decoded
 }
 
 func (page *Page) GetString(index int) string {
-	page.assertFieldAt(index, file.TypeString)
+	page.assertFieldAt(index, TypeString)
 	decoded, _ := gorel.DecodeByteSlice(page.buffer, page.startingOffsets.OffsetAtIndex(index))
 	return string(decoded)
 }
 
 func (page *Page) GetBytes(index int) []byte {
-	page.assertFieldAt(index, file.TypeByteSlice)
+	page.assertFieldAt(index, TypeByteSlice)
 	decoded, _ := gorel.DecodeByteSlice(page.buffer, page.startingOffsets.OffsetAtIndex(index))
 	return decoded
 }
@@ -207,7 +207,7 @@ func (page *Page) assertIndexInBounds(index int) {
 	)
 }
 
-func (page *Page) assertTypeDescriptionMatch(expectedTypeDescription, actualTypeDescription file.TypeDescription) {
+func (page *Page) assertTypeDescriptionMatch(expectedTypeDescription, actualTypeDescription TypeDescription) {
 	gorel.Assert(
 		expectedTypeDescription.Equals(actualTypeDescription),
 		"type description mismatch, expected type %s actual type %s",
@@ -216,19 +216,19 @@ func (page *Page) assertTypeDescriptionMatch(expectedTypeDescription, actualType
 	)
 }
 
-func (page *Page) addField(encodeFn func() gorel.BytesNeededForEncoding, typeDescription file.TypeDescription) {
+func (page *Page) addField(encodeFn func() gorel.BytesNeededForEncoding, typeDescription TypeDescription) {
 	bytesNeededForEncoding := encodeFn()
 	page.startingOffsets.Append(uint16(page.currentWriteOffset))
 	page.types.AddTypeDescription(typeDescription)
 	page.moveCurrentWriteOffsetBy(bytesNeededForEncoding)
 }
 
-func (page *Page) mutateField(index int, typeDescription file.TypeDescription, encodeFn func(destinationOffset uint) gorel.BytesNeededForEncoding) {
+func (page *Page) mutateField(index int, typeDescription TypeDescription, encodeFn func(destinationOffset uint) gorel.BytesNeededForEncoding) {
 	page.assertFieldAt(index, typeDescription)
 	encodeFn(uint(page.startingOffsets.OffsetAtIndex(index)))
 }
 
-func (page *Page) assertFieldAt(index int, typeDescription file.TypeDescription) {
+func (page *Page) assertFieldAt(index int, typeDescription TypeDescription) {
 	page.assertIndexInBounds(index)
 	page.assertTypeDescriptionMatch(typeDescription, page.types.GetTypeAt(index))
 }
