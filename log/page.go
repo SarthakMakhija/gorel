@@ -88,8 +88,8 @@ func (page *Page) hasCapacityFor(buffer []byte) bool {
 			page.startingOffsets.SizeUsedInBytes() -
 			2*reservedSizeForNumberOfOffsets
 
-	bytesNeeded := gorel.BytesNeededForEncodingAByteSlice(buffer) + page.startingOffsets.SizeInBytesForAnOffset()
-	return bytesAvailable >= bytesNeeded
+	bytesNeeded := gorel.BytesNeededForEncodingAByteSlice(buffer) + uint(page.startingOffsets.SizeInBytesForAnOffset())
+	return uint(bytesAvailable) >= bytesNeeded
 }
 
 func (page *Page) updateCurrentWriteOffset() {

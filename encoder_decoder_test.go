@@ -6,7 +6,7 @@ import (
 )
 
 func TestBytesNeededForEncodingAByteSlice(t *testing.T) {
-	assert.Equal(t, 6, BytesNeededForEncodingAByteSlice([]byte("raft")))
+	assert.Equal(t, uint(6), BytesNeededForEncodingAByteSlice([]byte("raft")))
 }
 
 func TestEncodeAndDecodeAByteSlice(t *testing.T) {

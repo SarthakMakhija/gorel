@@ -16,8 +16,8 @@ var (
 type BytesNeededForEncoding = uint
 type EndOffset = uint16
 
-func BytesNeededForEncodingAByteSlice(buffer []byte) int {
-	return int(reservedSizeForByteSlice) + len(buffer)
+func BytesNeededForEncodingAByteSlice(buffer []byte) BytesNeededForEncoding {
+	return (reservedSizeForByteSlice) + uint(len(buffer))
 }
 
 func EncodeByteSlice(source []byte, destination []byte, destinationStartingOffset uint) BytesNeededForEncoding {
