@@ -18,3 +18,12 @@ func TestOffset(t *testing.T) {
 
 	assert.Equal(t, int64(1200), blockId.offset(blockSize))
 }
+
+func TestPreviousBlock(t *testing.T) {
+	blockId := NewBlockId("lsm.log", 1)
+	assert.Equal(t, NewBlockId("lsm.log", 0), blockId.Previous())
+}
+
+func TestMissingBlock(t *testing.T) {
+	assert.True(t, MissingBlockId.IsMissing())
+}
