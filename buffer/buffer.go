@@ -32,9 +32,7 @@ func (buffer *Buffer) Page() *Page {
 
 func (buffer *Buffer) SetModified(transactionNumber int, logSequenceNumber uint) {
 	buffer.transactionNumber = transactionNumber
-	if logSequenceNumber >= 0 {
-		buffer.logSequenceNumber = logSequenceNumber
-	}
+	buffer.logSequenceNumber = logSequenceNumber
 }
 
 func (buffer *Buffer) AssignToBlock(blockId file.BlockId) error {

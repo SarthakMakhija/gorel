@@ -22,7 +22,7 @@ func NewBackwardLogIterator(fileManager *file.BlockFileManager, currentBlockId f
 }
 
 func (iterator *BackwardLogIterator) IsValid() bool {
-	return iterator.logPageIterator.IsValid() && iterator.currentBlockId.BlockNumber() >= 0
+	return iterator.logPageIterator.IsValid()
 }
 
 func (iterator *BackwardLogIterator) Previous() error {
