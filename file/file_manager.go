@@ -7,7 +7,6 @@ import (
 )
 
 // BlockFileManager
-// TODO: append method
 // TODO: synchronization
 type BlockFileManager struct {
 	dbDirectory string
